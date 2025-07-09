@@ -18,7 +18,7 @@ public class RoundedPanel extends JPanel{
         init();
     }
     private void init(){
-        putClientProperty(FlatClientProperties.STYLE, "arc:20");
+        putClientProperty(FlatClientProperties.STYLE, "arc:50");
     }
     
 }

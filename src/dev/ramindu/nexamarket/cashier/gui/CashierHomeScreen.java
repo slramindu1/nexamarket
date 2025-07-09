@@ -7,15 +7,15 @@ package dev.ramindu.nexamarket.cashier.gui;
 import dev.ramindu.nexamarket.main.gui.*;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLightLaf;
-import dev.ramindu.nexamarket.panel.AvailableStockPanel;
-import dev.ramindu.nexamarket.panel.BranchRegistrationPanel;
-import dev.ramindu.nexamarket.panel.BrandRegistrationPanel;
-import dev.ramindu.nexamarket.panel.CateogryRegistrationPanel;
-import dev.ramindu.nexamarket.panel.DashboardPanel;
-import dev.ramindu.nexamarket.panel.ManageCustomersPanel;
-import dev.ramindu.nexamarket.panel.ManageProductsPanel;
-import dev.ramindu.nexamarket.panel.ProfilePanel;
-import dev.ramindu.nexamarket.util.AppIconUtil;
+import dev.ramindu.nexamarket.admin.panel.AvailableStockPanel;
+import dev.ramindu.nexamarket.admin.panel.BranchRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.BrandRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.CateogryRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.DashboardPanel;
+import dev.ramindu.nexamarket.admin.panel.ManageCashiersPanel;
+import dev.ramindu.nexamarket.admin.panel.ManageProductsPanel;
+import dev.ramindu.nexamarket.admin.panel.ProfilePanel;
+import dev.ramindu.nexamarket.utils.AppIconUtil;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -41,20 +41,26 @@ public class CashierHomeScreen extends javax.swing.JFrame {
     private final java.time.Instant appStartTime = java.time.Instant.now();
 
     private DashboardPanel dashboardpanel;
-    private ManageCustomersPanel managecustomerspanel;
+    private ManageCashiersPanel managecustomerspanel;
     private ManageProductsPanel manageproductspanel;
     private BrandRegistrationPanel brandregistrationpanel;
     private CateogryRegistrationPanel cateogryregistrationpanel;
     private BranchRegistrationPanel branchregistrationpanel;
     private AvailableStockPanel availablestockpanel;
     private ProfilePanel profilepanel;
+    
+        private String loggedInUserName;
 
     private CardLayout ContentpanelLayout;
 
-    public CashierHomeScreen() {
+    public CashierHomeScreen(String userName) {
         initComponents();
         init();
         loadPanels();
+             this.loggedInUserName = userName;
+    }
+     public CashierHomeScreen() {
+      
     }
 
     private void init() {
@@ -157,13 +163,13 @@ public class CashierHomeScreen extends javax.swing.JFrame {
         }
 
         this.dashboardpanel = new DashboardPanel();
-        this.managecustomerspanel = new ManageCustomersPanel();
+        this.managecustomerspanel = new ManageCashiersPanel();
         this.manageproductspanel = new ManageProductsPanel();
         this.brandregistrationpanel = new BrandRegistrationPanel();
         this.cateogryregistrationpanel = new CateogryRegistrationPanel();
         this.branchregistrationpanel = new BranchRegistrationPanel();
         this.availablestockpanel = new AvailableStockPanel();
-        this.profilepanel = new ProfilePanel();
+//        this.profilepanel = new ProfilePanel();
 
         this.dashboardpanel.putClientProperty(FlatClientProperties.STYLE, "arc:20");
         this.managecustomerspanel.putClientProperty(FlatClientProperties.STYLE, "arc:20");

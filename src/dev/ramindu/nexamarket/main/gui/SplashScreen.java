@@ -5,7 +5,7 @@
 package dev.ramindu.nexamarket.main.gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import dev.ramindu.nexamarket.util.AppIconUtil;
+import dev.ramindu.nexamarket.utils.AppIconUtil;
 
 /**
  *

@@ -7,15 +7,23 @@ package dev.ramindu.nexamarket.admin.gui;
 import dev.ramindu.nexamarket.main.gui.*;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLightLaf;
-import dev.ramindu.nexamarket.panel.AvailableStockPanel;
-import dev.ramindu.nexamarket.panel.BranchRegistrationPanel;
-import dev.ramindu.nexamarket.panel.BrandRegistrationPanel;
-import dev.ramindu.nexamarket.panel.CateogryRegistrationPanel;
-import dev.ramindu.nexamarket.panel.DashboardPanel;
-import dev.ramindu.nexamarket.panel.ManageCustomersPanel;
-import dev.ramindu.nexamarket.panel.ManageProductsPanel;
-import dev.ramindu.nexamarket.panel.ProfilePanel;
-import dev.ramindu.nexamarket.util.AppIconUtil;
+import dev.ramindu.nexamarket.admin.panel.AvailableStockPanel;
+import dev.ramindu.nexamarket.admin.panel.BranchRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.BrandRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.CateogryRegistrationPanel;
+import dev.ramindu.nexamarket.admin.panel.DashboardPanel;
+import dev.ramindu.nexamarket.admin.panel.IssueGrnPanel;
+import dev.ramindu.nexamarket.admin.panel.IssueGrnPanel1;
+import dev.ramindu.nexamarket.admin.panel.IssueInvoicePanel;
+import dev.ramindu.nexamarket.admin.panel.ManageCashiersPanel;
+import dev.ramindu.nexamarket.admin.panel.ManageProductsPanel;
+import dev.ramindu.nexamarket.admin.panel.ManageSuppliersPanel;
+import dev.ramindu.nexamarket.admin.panel.PeviousInvoice;
+import dev.ramindu.nexamarket.admin.panel.PreviousGrn;
+import dev.ramindu.nexamarket.admin.panel.PreviousGrn1;
+import dev.ramindu.nexamarket.admin.panel.ProfilePanel;
+import dev.ramindu.nexamarket.model.User;
+import dev.ramindu.nexamarket.utils.AppIconUtil;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -41,16 +49,40 @@ public class AdminHomeScreen extends javax.swing.JFrame {
     private final java.time.Instant appStartTime = java.time.Instant.now();
 
     private DashboardPanel dashboardpanel;
-    private ManageCustomersPanel managecustomerspanel;
+    private ManageCashiersPanel managecashierspanel;
     private ManageProductsPanel manageproductspanel;
     private BrandRegistrationPanel brandregistrationpanel;
     private CateogryRegistrationPanel cateogryregistrationpanel;
     private BranchRegistrationPanel branchregistrationpanel;
     private AvailableStockPanel availablestockpanel;
     private ProfilePanel profilepanel;
+    private ManageSuppliersPanel managesuppliers;
+    private IssueGrnPanel issuegrnpannel;
+    private IssueGrnPanel1 issuegrnpannel1;
+    private PreviousGrn previousgrnpannel;
+    private PreviousGrn1 previousgrnpannel1;
+    private PeviousInvoice previousinvoices;
+    private IssueInvoicePanel IssueInvoicePanel;
+    
 
     private CardLayout ContentpanelLayout;
 
+    private User loggedInUser;
+
+    public AdminHomeScreen(User user) {
+        this.loggedInUser = user;  // 💾 Save user object
+        initComponents();
+        init();
+
+        // Set welcome text using full name
+        String fullName = user.getFirstName() + " " + user.getLastName();
+        jLabel1.setText("Welcome, " + fullName);
+
+        loadPanels();
+    }
+
+    // Remove the default constructor to prevent calling without user data
+    // OR keep it for testing (not recommended in production)
     public AdminHomeScreen() {
         initComponents();
         init();
@@ -157,25 +189,39 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         }
 
         this.dashboardpanel = new DashboardPanel();
-        this.managecustomerspanel = new ManageCustomersPanel();
+        this.managecashierspanel = new ManageCashiersPanel();
         this.manageproductspanel = new ManageProductsPanel();
         this.brandregistrationpanel = new BrandRegistrationPanel();
         this.cateogryregistrationpanel = new CateogryRegistrationPanel();
         this.branchregistrationpanel = new BranchRegistrationPanel();
         this.availablestockpanel = new AvailableStockPanel();
-        this.profilepanel = new ProfilePanel();
+        this.profilepanel = new ProfilePanel(loggedInUser);
+        this.managesuppliers = new ManageSuppliersPanel();
+        this.issuegrnpannel = new IssueGrnPanel();
+        this.issuegrnpannel1 = new IssueGrnPanel1();
+        this.previousgrnpannel = new PreviousGrn();
+        this.previousgrnpannel1 = new PreviousGrn1();
+        this.previousinvoices = new PeviousInvoice();
+        this.IssueInvoicePanel = new IssueInvoicePanel();
 
         this.dashboardpanel.putClientProperty(FlatClientProperties.STYLE, "arc:20");
-        this.managecustomerspanel.putClientProperty(FlatClientProperties.STYLE, "arc:20");
+        this.managecashierspanel.putClientProperty(FlatClientProperties.STYLE, "arc:20");
 
         this.ContentPanel.add(dashboardpanel, "dashboard_panel");
-        this.ContentPanel.add(managecustomerspanel, "managecustomerspanel");
+        this.ContentPanel.add(managecashierspanel, "managecashierspanel");
         this.ContentPanel.add(manageproductspanel, "manageproductspanel");
         this.ContentPanel.add(brandregistrationpanel, "brandregistrationpanel");
         this.ContentPanel.add(cateogryregistrationpanel, "cateogryregistrationpanel");
         this.ContentPanel.add(branchregistrationpanel, "branchregistrationpanel");
         this.ContentPanel.add(availablestockpanel, "availablestockpanel");
         this.ContentPanel.add(profilepanel, "profilepanel");
+        this.ContentPanel.add(managesuppliers, "managesuppliers");
+        this.ContentPanel.add(issuegrnpannel, "issuegrnpanel");
+        this.ContentPanel.add(issuegrnpannel1, "issuegrnpanel1");
+        this.ContentPanel.add(previousgrnpannel, "previousgrnpannel");
+        this.ContentPanel.add(previousgrnpannel1, "previousgrnpannel1");
+        this.ContentPanel.add(previousinvoices, "previousinvoices");
+        this.ContentPanel.add(IssueInvoicePanel, "IssueInvoicePanel");
 
         SwingUtilities.updateComponentTreeUI(ContentPanel);
     }
@@ -215,10 +261,10 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         Headline3 = new javax.swing.JLabel();
         Profile = new javax.swing.JLabel();
         Sign_Out = new javax.swing.JLabel();
+        Branch_Registration1 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
@@ -267,7 +313,7 @@ public class AdminHomeScreen extends javax.swing.JFrame {
 
         Manage_Customers.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Manage_Customers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/manage_customers.png"))); // NOI18N
-        Manage_Customers.setText("  Manage Customers");
+        Manage_Customers.setText("  Manage Cashiers");
         Manage_Customers.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         Manage_Customers.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -333,16 +379,31 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         Good_Recieve_Notes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/add.png"))); // NOI18N
         Good_Recieve_Notes.setText("  Issue Grn");
         Good_Recieve_Notes.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Good_Recieve_Notes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Good_Recieve_NotesMouseClicked(evt);
+            }
+        });
 
         Previous_Recieve_Notes.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Previous_Recieve_Notes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/correct.png"))); // NOI18N
         Previous_Recieve_Notes.setText("  Previous Grns");
         Previous_Recieve_Notes.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Previous_Recieve_Notes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Previous_Recieve_NotesMouseClicked(evt);
+            }
+        });
 
         Previous_Return_Notes.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Previous_Return_Notes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/correct.png"))); // NOI18N
         Previous_Return_Notes.setText("  Previous Grns");
         Previous_Return_Notes.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Previous_Return_Notes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Previous_Return_NotesMouseClicked(evt);
+            }
+        });
 
         Headline2.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Headline2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/grn1.png"))); // NOI18N
@@ -352,16 +413,31 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         Good_Return_Notes.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/add.png"))); // NOI18N
         Good_Return_Notes.setText("  Issue Grn");
         Good_Return_Notes.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Good_Return_Notes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Good_Return_NotesMouseClicked(evt);
+            }
+        });
 
         Previous_Invoice.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Previous_Invoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/correct.png"))); // NOI18N
         Previous_Invoice.setText("  Previous Invoice");
         Previous_Invoice.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Previous_Invoice.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Previous_InvoiceMouseClicked(evt);
+            }
+        });
 
         Issue_Invoice.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Issue_Invoice.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/add.png"))); // NOI18N
         Issue_Invoice.setText("  Issue Invoice");
         Issue_Invoice.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Issue_Invoice.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Issue_InvoiceMouseClicked(evt);
+            }
+        });
 
         Headline3.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         Headline3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/invoice.png"))); // NOI18N
@@ -381,6 +457,16 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         Sign_Out.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/signout.png"))); // NOI18N
         Sign_Out.setText("  Sign Out");
         Sign_Out.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        Branch_Registration1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        Branch_Registration1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/branch.png"))); // NOI18N
+        Branch_Registration1.setText("  Manage Suppliers");
+        Branch_Registration1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        Branch_Registration1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                Branch_Registration1MouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -421,7 +507,8 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                                 .addComponent(jSeparator1)
                                 .addComponent(jSeparator2))
                             .addComponent(Profile)
-                            .addComponent(Sign_Out))))
+                            .addComponent(Sign_Out)
+                            .addComponent(Branch_Registration1))))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -439,7 +526,9 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                 .addComponent(Cateogry_Registration)
                 .addGap(27, 27, 27)
                 .addComponent(Branch_Registration)
-                .addGap(30, 30, 30)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addComponent(Branch_Registration1)
+                .addGap(27, 27, 27)
                 .addComponent(Available_Stock)
                 .addGap(27, 27, 27)
                 .addComponent(Headline1)
@@ -469,7 +558,7 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                 .addComponent(Profile)
                 .addGap(27, 27, 27)
                 .addComponent(Sign_Out)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jScrollPane2.setViewportView(jPanel3);
@@ -496,18 +585,15 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(DateTime, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 769, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 837, Short.MAX_VALUE))
         );
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/profile.png"))); // NOI18N
-        jLabel1.setText(" Ramindu Admin");
+        jLabel1.setText(" Ramindu");
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setText("Welcome Back");
-
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel3.setText("Ramindu Ravihansa");
 
         jButton1.setBackground(new java.awt.Color(0, 204, 102));
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/setting.png"))); // NOI18N
@@ -645,10 +731,8 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
                         .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 1046, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 1104, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -682,8 +766,7 @@ public class AdminHomeScreen extends javax.swing.JFrame {
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel1)
                                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel2)
-                                .addComponent(jLabel3)))
+                                .addComponent(jLabel2)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -719,7 +802,7 @@ public class AdminHomeScreen extends javax.swing.JFrame {
 
     private void Manage_CustomersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Manage_CustomersMouseClicked
         // TODO add your handling code here:
-        this.ContentpanelLayout.show(ContentPanel, "managecustomerspanel");
+        this.ContentpanelLayout.show(ContentPanel, "managecashierspanel");
     }//GEN-LAST:event_Manage_CustomersMouseClicked
 
     private void Manage_ProdcutsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Manage_ProdcutsMouseClicked
@@ -753,6 +836,41 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         this.ContentpanelLayout.show(ContentPanel, "profilepanel");
     }//GEN-LAST:event_ProfileMouseClicked
 
+    private void Good_Recieve_NotesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Good_Recieve_NotesMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "issuegrnpanel");
+    }//GEN-LAST:event_Good_Recieve_NotesMouseClicked
+
+    private void Good_Return_NotesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Good_Return_NotesMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "issuegrnpanel1");
+    }//GEN-LAST:event_Good_Return_NotesMouseClicked
+
+    private void Previous_Recieve_NotesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Previous_Recieve_NotesMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "previousgrnpannel");
+    }//GEN-LAST:event_Previous_Recieve_NotesMouseClicked
+
+    private void Previous_Return_NotesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Previous_Return_NotesMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "previousgrnpannel1");
+    }//GEN-LAST:event_Previous_Return_NotesMouseClicked
+
+    private void Issue_InvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Issue_InvoiceMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "IssueInvoicePanel");
+    }//GEN-LAST:event_Issue_InvoiceMouseClicked
+
+    private void Previous_InvoiceMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Previous_InvoiceMouseClicked
+        // TODO add your handling code here:
+        this.ContentpanelLayout.show(ContentPanel, "previousinvoices");
+    }//GEN-LAST:event_Previous_InvoiceMouseClicked
+
+    private void Branch_Registration1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_Branch_Registration1MouseClicked
+        // TODO add your handling code here:
+         this.ContentpanelLayout.show(ContentPanel, "managesuppliers");
+    }//GEN-LAST:event_Branch_Registration1MouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -773,6 +891,7 @@ public class AdminHomeScreen extends javax.swing.JFrame {
     private javax.swing.JMenu Account;
     private javax.swing.JLabel Available_Stock;
     private javax.swing.JLabel Branch_Registration;
+    private javax.swing.JLabel Branch_Registration1;
     private javax.swing.JLabel Brand_Registration;
     private javax.swing.JLabel Cateogry_Registration;
     private javax.swing.JPanel ContentPanel;
@@ -804,7 +923,6 @@ public class AdminHomeScreen extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;

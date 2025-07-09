@@ -5,6 +5,7 @@
 package dev.ramindu.nexamarket.main.gui;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import dev.ramindu.nexamarket.validation.Validator;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -184,77 +185,68 @@ public class LoginScreen extends javax.swing.JDialog {
         String username = UserNameInput.getText().trim();
         String password = String.valueOf(passwordInput.getPassword()).trim();
 
-        if (username.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "username cannot be empty",
-                    "Warning Message",
-                    JOptionPane.WARNING_MESSAGE
-            );
+        if (!Validator.isUserNameValid(username)) {
+            return;
+        }
+        if (!Validator.isPasswordValid(password)) {
             return;
         }
 
-        if (password.isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Password cannot be empty",
-                    "Warning Message",
-                    JOptionPane.WARNING_MESSAGE
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `user`.`username` = '" + username + "' AND `user`.`password` = '" + password + "'"
             );
-            return;
-        }
 
-        if (password.length() < 3) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Password must be greater than 3 characters",
-                    "Warning Message",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        } else {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
-                Statement statement = c.createStatement();
-                ResultSet rs = statement.executeQuery(
-                        "SELECT * FROM `user` WHERE `user`.`username` = '" + username + "' AND `user`.`password` = '" + password + "'"
-                );
+            boolean found = false;
+            while (rs.next()) {
+                found = true;
+                if (rs.getInt("status_id") == 1) {
+                    int positionId = rs.getInt("position_id");
 
-                boolean found = false;
-                while (rs.next()) {
-                    found = true;
-                    if (rs.getInt("status_id") == 1) {
-                        int positionId = rs.getInt("position_id");
+                    // DB එකෙන් අවශ්‍ය data එක ගන්න
+                    String userId = rs.getString("id");
+                    String usernamefield = rs.getString("username");
+                    String firstName = rs.getString("first_name"); // 💡 use DB column name correctly
+                    String lastName = rs.getString("last_name");
+                    String email = rs.getString("email");
+                    String contact = rs.getString("mobile");
 
-                        // Show login message (20 seconds = 20000 ms)
-                        if (positionId == 1) {
-                            new dev.ramindu.nexamarket.admin.gui.AdminHomeScreen().setVisible(true);
-                        } else if (positionId == 2) {
+                    // full name එක optional
+                    String fullName = firstName + " " + lastName;
 
-                            new dev.ramindu.nexamarket.accounter.gui.AccounterHomeScreen().setVisible(true);
-                        } else if (positionId == 3) {
+                    // ✅ User object එකක් create කරන්න
+                    dev.ramindu.nexamarket.model.User user = new dev.ramindu.nexamarket.model.User(
+                            userId, usernamefield, firstName, lastName, email, contact
+                    );
 
-                            new dev.ramindu.nexamarket.cashier.gui.CashierHomeScreen().setVisible(true);
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Unknown position. Please contact admin.", "Error", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-
-                        this.dispose(); // Close the login screen
+                    // Panel redirect
+                    if (positionId == 1) {
+                        new dev.ramindu.nexamarket.admin.gui.AdminHomeScreen(user).setVisible(true);
+                    } else if (positionId == 2) {
+//                        new dev.ramindu.nexamarket.cashier.gui.CashierHomeScreen(user).setVisible(true);
+                        System.out.println("Comment On the path");
                     } else {
-                        JOptionPane.showMessageDialog(this, "OOPS!.. Something went wrong! Please check the login credentials", "Error Message", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Unknown position. Please contact admin.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
                     }
-                }
 
-                if (!found) {
-                    JOptionPane.showMessageDialog(this, "No matching user found.", "Error Message", JOptionPane.ERROR_MESSAGE);
+                    this.dispose(); // Login screen close
+                } else {
+                    JOptionPane.showMessageDialog(this, "OOPS!.. Something went wrong! Please check the login credentials", "Error Message", JOptionPane.ERROR_MESSAGE);
                 }
-
-            } catch (ClassNotFoundException | SQLException e) {  // <-- fixed catch syntax here
-                e.printStackTrace();
             }
+
+            if (!found) {
+                JOptionPane.showMessageDialog(this, "No matching user found.", "Error Message", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (ClassNotFoundException | SQLException e) {  // <-- fixed catch syntax here
+            e.printStackTrace();
         }
+
 
     }//GEN-LAST:event_roundButton1ActionPerformed
 
@@ -263,28 +255,8 @@ public class LoginScreen extends javax.swing.JDialog {
         roundButton1.doClick();
     }//GEN-LAST:event_UserNameInputActionPerformed
 
-    public void showNotification(String message, int durationMillis, Runnable afterClose) {
-        JDialog dialog = new JDialog((java.awt.Dialog) this); // safer cast
-        dialog.setUndecorated(true);
-        dialog.setLayout(new BorderLayout());
-
-        JLabel label = new JLabel(message, SwingConstants.CENTER);
-        label.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        label.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        label.setForeground(Color.WHITE);
-        label.setBackground(new Color(0, 128, 0));
-        label.setOpaque(true);
-
-        dialog.add(label, BorderLayout.CENTER);
-        dialog.setSize(400, 100);
-        dialog.setLocationRelativeTo(this);
-        dialog.setAlwaysOnTop(true);
-        dialog.setVisible(true);
-
-        new javax.swing.Timer(durationMillis, e -> {
-            dialog.dispose();
-            afterClose.run(); // Do after message is closed
-        }).start();
+    private boolean validateEmail(String value) {
+        return false;
     }
 
     /**
