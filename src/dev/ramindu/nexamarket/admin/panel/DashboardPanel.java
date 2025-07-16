@@ -13,8 +13,22 @@ import dev.ramindu.nexamarket.components.chart.ModelChart;
 import dev.ramindu.nexamarket.utils.NumberAnimator;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import static javax.swing.SwingConstants.CENTER;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 
 public class DashboardPanel extends javax.swing.JPanel {
 
@@ -23,7 +37,7 @@ public class DashboardPanel extends javax.swing.JPanel {
      */
     public DashboardPanel() {
         initComponents(); // GUI Builder-initialized components
-
+        loadDashboardData();
         // Set circular progress value after initialization
         circularProgressBar.setProgress(90);  // ✅ Only once, after init
 
@@ -56,19 +70,88 @@ public class DashboardPanel extends javax.swing.JPanel {
         payments.put("Online", 20.0);
         pieChartPanel.setData(payments);
 
-        initComponents();
+        // Set Header Style
+        JTableHeader header = jTable1.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(new Color(0, 204, 102)); // light green
+        header.setForeground(Color.WHITE);
+        header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-        NumberAnimator animator = new NumberAnimator(jLabel5, 150000);
-        animator.start();
+// Set Row Height and Grid
+        jTable1.setRowHeight(32);
+        jTable1.setShowGrid(false);
+        jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-        NumberAnimator animator1 = new NumberAnimator(jLabel12, 150000);
-        animator1.start();
+// Remove borders
+        jTable1.setBorder(null);
+        ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-        NumberAnimator animator2 = new NumberAnimator(jLabel20, 150000);
-        animator2.start();
+// Font for cells
+        jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        jTable1.setForeground(Color.BLACK);
 
-        
+// Set cell renderer for alternating row colors
+        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
 
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (!isSelected) {
+                    if (row % 2 == 0) {
+                        c.setBackground(Color.WHITE);
+                    } else {
+                        c.setBackground(new Color(245, 245, 245)); // light gray
+                    }
+                    c.setForeground(Color.BLACK);
+                } else {
+                    c.setBackground(new Color(0, 120, 215));
+                    c.setForeground(Color.WHITE);
+                }
+
+                setHorizontalAlignment(CENTER); // Center align all cells
+                return c;
+            }
+        };
+
+// Apply to all columns
+        for (int i = 0; i < jTable1.getColumnCount(); i++) {
+            jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
+        }
+    }
+
+    private void loadDashboardData() {
+        String sqlSales = "SELECT SUM(total_price) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
+        String sqlOrders = "SELECT COUNT(*) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
+        String sqlProfit = "SELECT SUM(profit) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
+
+        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234")) {
+
+            // Sales
+            try (PreparedStatement ps = con.prepareStatement(sqlSales); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    lblWeeklySales.setText("Rs. " + rs.getDouble(1));
+                }
+            }
+
+            // Orders
+            try (PreparedStatement ps = con.prepareStatement(sqlOrders); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    lblWeeklyOrders.setText(String.valueOf(rs.getInt(1)));
+                }
+            }
+
+            // Profit
+            try (PreparedStatement ps = con.prepareStatement(sqlProfit); ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    lblWeeklyProfit.setText("Rs. " + rs.getDouble(1));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -84,7 +167,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         roundedPanel7 = new dev.ramindu.nexamarket.components.RoundedPanel();
         gradientCardPanel21 = new dev.ramindu.nexamarket.components.GradientCardPanel2();
         jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        lblWeeklySales = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
         roundedPanel9 = new dev.ramindu.nexamarket.components.RoundedPanel();
@@ -97,7 +180,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         roundedPanel8 = new dev.ramindu.nexamarket.components.RoundedPanel();
         gradientCardPanel11 = new dev.ramindu.nexamarket.components.GradientCardPanel1();
         jLabel9 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        lblWeeklyOrders = new javax.swing.JLabel();
         jLabel13 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         roundedPanel11 = new dev.ramindu.nexamarket.components.RoundedPanel();
@@ -108,7 +191,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         roundedPanel13 = new dev.ramindu.nexamarket.components.RoundedPanel();
         gradientCardPanel1 = new dev.ramindu.nexamarket.components.GradientCardPanel();
         jLabel14 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
+        lblWeeklyProfit = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         roundedPanel18 = new dev.ramindu.nexamarket.components.RoundedPanel();
@@ -122,7 +205,7 @@ public class DashboardPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel25 = new javax.swing.JLabel();
-        stockLevelMeterPanel1 = new dev.ramindu.nexamarket.components.StockLevelMeterPanel();
+        roundedPanel1 = new dev.ramindu.nexamarket.components.RoundedPanel();
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/home.png"))); // NOI18N
@@ -136,9 +219,9 @@ public class DashboardPanel extends javax.swing.JPanel {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Weekly Sales");
 
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("Rs. 150,000");
+        lblWeeklySales.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        lblWeeklySales.setForeground(new java.awt.Color(255, 255, 255));
+        lblWeeklySales.setText("Rs. 150,000");
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
@@ -156,7 +239,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                     .addGroup(gradientCardPanel21Layout.createSequentialGroup()
                         .addGroup(gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel6)
-                            .addComponent(jLabel5))
+                            .addComponent(lblWeeklySales))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(gradientCardPanel21Layout.createSequentialGroup()
                         .addComponent(jLabel4)
@@ -172,7 +255,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                     .addComponent(jLabel4)
                     .addComponent(jLabel22))
                 .addGap(44, 44, 44)
-                .addComponent(jLabel5)
+                .addComponent(lblWeeklySales)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
                 .addComponent(jLabel6)
                 .addGap(53, 53, 53))
@@ -280,9 +363,9 @@ public class DashboardPanel extends javax.swing.JPanel {
         jLabel9.setForeground(new java.awt.Color(255, 255, 255));
         jLabel9.setText("Weekly Orders");
 
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel12.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel12.setText("Rs. 250,000");
+        lblWeeklyOrders.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        lblWeeklyOrders.setForeground(new java.awt.Color(255, 255, 255));
+        lblWeeklyOrders.setText("Rs. 250,000");
 
         jLabel13.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
@@ -300,7 +383,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                     .addGroup(gradientCardPanel11Layout.createSequentialGroup()
                         .addGroup(gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel13)
-                            .addComponent(jLabel12))
+                            .addComponent(lblWeeklyOrders))
                         .addContainerGap(202, Short.MAX_VALUE))
                     .addGroup(gradientCardPanel11Layout.createSequentialGroup()
                         .addComponent(jLabel9)
@@ -316,7 +399,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                     .addComponent(jLabel9)
                     .addComponent(jLabel23))
                 .addGap(40, 40, 40)
-                .addComponent(jLabel12)
+                .addComponent(lblWeeklyOrders)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel13)
                 .addContainerGap(45, Short.MAX_VALUE))
@@ -360,35 +443,35 @@ public class DashboardPanel extends javax.swing.JPanel {
         roundedPanel11.setLayout(roundedPanel11Layout);
         roundedPanel11Layout.setHorizontalGroup(
             roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel11Layout.createSequentialGroup()
-                .addGroup(roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addGap(75, 75, 75)
-                        .addComponent(jLabel10))
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(jLabel11)))
-                .addContainerGap(29, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel11Layout.createSequentialGroup()
                 .addGroup(roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(roundedPanel11Layout.createSequentialGroup()
                         .addGap(44, 44, 44)
                         .addComponent(circularProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE))
                     .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap(53, Short.MAX_VALUE)
                         .addComponent(roundButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(49, 49, 49))
+            .addGroup(roundedPanel11Layout.createSequentialGroup()
+                .addGroup(roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(roundedPanel11Layout.createSequentialGroup()
+                        .addGap(79, 79, 79)
+                        .addComponent(jLabel10))
+                    .addGroup(roundedPanel11Layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addComponent(jLabel11)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         roundedPanel11Layout.setVerticalGroup(
             roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(roundedPanel11Layout.createSequentialGroup()
-                .addGap(32, 32, 32)
+                .addGap(29, 29, 29)
                 .addComponent(jLabel10)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel11)
-                .addGap(31, 31, 31)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                 .addComponent(circularProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(roundButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(24, 24, 24))
         );
@@ -399,9 +482,9 @@ public class DashboardPanel extends javax.swing.JPanel {
         jLabel14.setForeground(new java.awt.Color(255, 255, 255));
         jLabel14.setText("Updated Profit");
 
-        jLabel20.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        jLabel20.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel20.setText("Rs. 45,000");
+        lblWeeklyProfit.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        lblWeeklyProfit.setForeground(new java.awt.Color(255, 255, 255));
+        lblWeeklyProfit.setText("Rs. 45,000");
 
         jLabel21.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel21.setForeground(new java.awt.Color(255, 255, 255));
@@ -420,7 +503,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                     .addGroup(gradientCardPanel1Layout.createSequentialGroup()
                         .addGroup(gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel21)
-                            .addComponent(jLabel20))
+                            .addComponent(lblWeeklyProfit))
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(gradientCardPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel14)
@@ -439,7 +522,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                         .addGap(65, 65, 65)
                         .addComponent(jLabel24)))
                 .addGap(53, 53, 53)
-                .addComponent(jLabel20)
+                .addComponent(lblWeeklyProfit)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel21)
                 .addContainerGap(29, Short.MAX_VALUE))
@@ -547,32 +630,28 @@ public class DashboardPanel extends javax.swing.JPanel {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null}
+                {null, null, null, null}
             },
             new String [] {
-                "Cashier Name", "Cashier Email", "Payment Date", "Paid Amount", "Title 5", "Title 6"
+                "Cashier Name", "Cashier Email", "Payment Date", "Paid Amount"
             }
         ));
         jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(4).setHeaderValue("Title 5");
-            jTable1.getColumnModel().getColumn(5).setHeaderValue("Title 6");
-        }
 
         jLabel25.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel25.setText("Monthly Cashier Payment");
 
-        stockLevelMeterPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        roundedPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        javax.swing.GroupLayout stockLevelMeterPanel1Layout = new javax.swing.GroupLayout(stockLevelMeterPanel1);
-        stockLevelMeterPanel1.setLayout(stockLevelMeterPanel1Layout);
-        stockLevelMeterPanel1Layout.setHorizontalGroup(
-            stockLevelMeterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout roundedPanel1Layout = new javax.swing.GroupLayout(roundedPanel1);
+        roundedPanel1.setLayout(roundedPanel1Layout);
+        roundedPanel1Layout.setHorizontalGroup(
+            roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        stockLevelMeterPanel1Layout.setVerticalGroup(
-            stockLevelMeterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 226, Short.MAX_VALUE)
+        roundedPanel1Layout.setVerticalGroup(
+            roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -591,20 +670,19 @@ public class DashboardPanel extends javax.swing.JPanel {
                             .addComponent(roundedPanel13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(roundedPanel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(roundedPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
                                 .addComponent(roundedPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(roundedPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(35, 35, 35))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(roundedPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(stockLevelMeterPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(roundedPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                    .addGroup(layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(jLabel25)
                                         .addGap(322, 322, 322))
@@ -633,11 +711,7 @@ public class DashboardPanel extends javax.swing.JPanel {
                 .addGap(29, 29, 29)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(stockLevelMeterPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(roundedPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(layout.createSequentialGroup()
@@ -650,7 +724,11 @@ public class DashboardPanel extends javax.swing.JPanel {
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel25)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(roundedPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(roundedPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(roundedPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -677,13 +755,11 @@ public class DashboardPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
@@ -691,15 +767,18 @@ public class DashboardPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel lblWeeklyOrders;
+    private javax.swing.JLabel lblWeeklyProfit;
+    private javax.swing.JLabel lblWeeklySales;
     private dev.ramindu.nexamarket.components.chart.LineChart lineChart;
     private dev.ramindu.nexamarket.components.PieChartPanel pieChartPanel;
     private dev.ramindu.nexamarket.components.PolarAreaChartPanel polarAreaChartPanel2;
     private dev.ramindu.nexamarket.components.RoundButton roundButton1;
+    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel1;
     private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel10;
     private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel11;
     private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel12;
@@ -711,6 +790,5 @@ public class DashboardPanel extends javax.swing.JPanel {
     private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel8;
     private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel9;
     private dev.ramindu.nexamarket.components.StackedProgressBar stackedProgressBar1;
-    private dev.ramindu.nexamarket.components.StockLevelMeterPanel stockLevelMeterPanel1;
     // End of variables declaration//GEN-END:variables
 }

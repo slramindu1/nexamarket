@@ -34,6 +34,7 @@ import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -66,6 +67,8 @@ public class AdminHomeScreen extends javax.swing.JFrame {
     
 
     private CardLayout ContentpanelLayout;
+    private JPopupMenu popup = new JPopupMenu();
+
 
     private User loggedInUser;
 
