@@ -284,12 +284,38 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         jLabel11 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         File = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
         Edit = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
+        jMenuItem8 = new javax.swing.JMenuItem();
+        jMenuItem9 = new javax.swing.JMenuItem();
+        jMenuItem10 = new javax.swing.JMenuItem();
+        jMenuItem11 = new javax.swing.JMenuItem();
+        jMenuItem12 = new javax.swing.JMenuItem();
         View = new javax.swing.JMenu();
         Tools = new javax.swing.JMenu();
+        jMenuItem13 = new javax.swing.JMenuItem();
+        jMenuItem14 = new javax.swing.JMenuItem();
+        jMenuItem15 = new javax.swing.JMenuItem();
+        jMenuItem16 = new javax.swing.JMenuItem();
         Account = new javax.swing.JMenu();
         About = new javax.swing.JMenu();
+        jMenuItem17 = new javax.swing.JMenuItem();
+        jMenuItem18 = new javax.swing.JMenuItem();
+        jMenuItem19 = new javax.swing.JMenuItem();
         Help = new javax.swing.JMenu();
+        jMenuItem20 = new javax.swing.JMenuItem();
+        jMenuItem21 = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem22 = new javax.swing.JMenuItem();
+        jMenuItem23 = new javax.swing.JMenuItem();
+        jMenuItem24 = new javax.swing.JMenuItem();
+        jMenuItem25 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -701,24 +727,138 @@ public class AdminHomeScreen extends javax.swing.JFrame {
         );
 
         File.setText("File");
+
+        jMenuItem1.setText("New Window");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        File.add(jMenuItem1);
+
+        jMenuItem2.setText("Print Screen");
+        File.add(jMenuItem2);
+
+        jMenuItem3.setText("Log Out");
+        File.add(jMenuItem3);
+
+        jMenuItem4.setText("Exit");
+        File.add(jMenuItem4);
+
         jMenuBar1.add(File);
 
         Edit.setText("Edit");
+
+        jMenuItem5.setText("Undo");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        Edit.add(jMenuItem5);
+
+        jMenuItem6.setText("Redo");
+        Edit.add(jMenuItem6);
+
+        jMenuItem7.setText("Cut");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        Edit.add(jMenuItem7);
+
+        jMenuItem8.setText("Copy");
+        Edit.add(jMenuItem8);
+
+        jMenuItem9.setText("Paste");
+        Edit.add(jMenuItem9);
+
+        jMenuItem10.setText("Delete Selected");
+        Edit.add(jMenuItem10);
+
+        jMenuItem11.setText("Edit Profile");
+        Edit.add(jMenuItem11);
+
+        jMenuItem12.setText("Change Password");
+        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem12ActionPerformed(evt);
+            }
+        });
+        Edit.add(jMenuItem12);
+
         jMenuBar1.add(Edit);
 
         View.setText("View");
         jMenuBar1.add(View);
 
         Tools.setText("Tools");
+
+        jMenuItem13.setText("Calculator");
+        jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem13ActionPerformed(evt);
+            }
+        });
+        Tools.add(jMenuItem13);
+
+        jMenuItem14.setText("Backup Database");
+        Tools.add(jMenuItem14);
+
+        jMenuItem15.setText("Restore Database");
+        Tools.add(jMenuItem15);
+
+        jMenuItem16.setText("Update Software");
+        Tools.add(jMenuItem16);
+
         jMenuBar1.add(Tools);
 
         Account.setText("Account");
         jMenuBar1.add(Account);
 
         About.setText("About");
+
+        jMenuItem17.setText("About Application");
+        About.add(jMenuItem17);
+
+        jMenuItem18.setText("Version Info");
+        About.add(jMenuItem18);
+
+        jMenuItem19.setText("Developer Credits");
+        About.add(jMenuItem19);
+
         jMenuBar1.add(About);
 
         Help.setText("Help");
+
+        jMenuItem20.setText("User Guide");
+        Help.add(jMenuItem20);
+
+        jMenuItem21.setText("Check Updates");
+        Help.add(jMenuItem21);
+
+        jMenu1.setText("Contact Support");
+
+        jMenuItem22.setText("Mobile");
+        jMenu1.add(jMenuItem22);
+
+        jMenuItem23.setText("Email");
+        jMenu1.add(jMenuItem23);
+
+        Help.add(jMenu1);
+
+        jMenuItem24.setText("Check Updates");
+        Help.add(jMenuItem24);
+
+        jMenuItem25.setText("Report Bug");
+        jMenuItem25.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem25ActionPerformed(evt);
+            }
+        });
+        Help.add(jMenuItem25);
+
         jMenuBar1.add(Help);
 
         setJMenuBar(jMenuBar1);
@@ -874,6 +1014,30 @@ public class AdminHomeScreen extends javax.swing.JFrame {
          this.ContentpanelLayout.show(ContentPanel, "managesuppliers");
     }//GEN-LAST:event_Branch_Registration1MouseClicked
 
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
+
+    private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem12ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem12ActionPerformed
+
+    private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem13ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem13ActionPerformed
+
+    private void jMenuItem25ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem25ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem25ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -931,7 +1095,33 @@ public class AdminHomeScreen extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem10;
+    private javax.swing.JMenuItem jMenuItem11;
+    private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem13;
+    private javax.swing.JMenuItem jMenuItem14;
+    private javax.swing.JMenuItem jMenuItem15;
+    private javax.swing.JMenuItem jMenuItem16;
+    private javax.swing.JMenuItem jMenuItem17;
+    private javax.swing.JMenuItem jMenuItem18;
+    private javax.swing.JMenuItem jMenuItem19;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem20;
+    private javax.swing.JMenuItem jMenuItem21;
+    private javax.swing.JMenuItem jMenuItem22;
+    private javax.swing.JMenuItem jMenuItem23;
+    private javax.swing.JMenuItem jMenuItem24;
+    private javax.swing.JMenuItem jMenuItem25;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
+    private javax.swing.JMenuItem jMenuItem8;
+    private javax.swing.JMenuItem jMenuItem9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

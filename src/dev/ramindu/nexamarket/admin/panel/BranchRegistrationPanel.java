@@ -96,13 +96,13 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
     private void loadBranchDataToTable() {
         // JTable එකේ column names set කරන්න
         DefaultTableModel model = new DefaultTableModel();
-        model.setColumnIdentifiers(new Object[]{"ID", "Branch Name", "Contact Number", "Address 1", "Address 2", "City"});
+        model.setColumnIdentifiers(new Object[]{"ID", "Branch Name", "Contact Number", "Address", "City"});
 
         try {
             // Inline connection
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement stmt = c.createStatement();
-            String sql = "SELECT id, name, conatct_number, Address_01, Address_02, City FROM branch";
+            String sql = "SELECT id, name, conatct_number, Address, City FROM branch";
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
@@ -111,9 +111,8 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                 row[0] = rs.getInt("id");
                 row[1] = rs.getString("name");
                 row[2] = rs.getString("conatct_number");
-                row[3] = rs.getString("Address_01");
-                row[4] = rs.getString("Address_02");
-                row[5] = rs.getString("City");
+                row[3] = rs.getString("Address");
+                row[4] = rs.getString("City");
 
                 model.addRow(row);  // model එකට එකතු කරන්න
             }
@@ -133,7 +132,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         jTextField1.setText("");
         jTextField2.setText("");
         jTextField3.setText("");
-        jTextField4.setText("");
         jTextField5.setText("");
     }
 
@@ -163,8 +161,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         jTextField2 = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
-        jLabel12 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
         jTextField5 = new javax.swing.JTextField();
 
@@ -256,16 +252,7 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         jLabel10.setText("Branch Contact Number");
 
         jLabel11.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel11.setText("Address Line 01");
-
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel12.setText("Address Line 02");
-
-        jTextField4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField4ActionPerformed(evt);
-            }
-        });
+        jLabel11.setText("Address");
 
         jLabel13.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel13.setText("City");
@@ -292,7 +279,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                         .addGap(0, 18, Short.MAX_VALUE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel13)
-                            .addComponent(jLabel12)
                             .addComponent(jLabel9)
                             .addComponent(jTextField1)
                             .addComponent(jLabel10)
@@ -304,7 +290,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jLabel11)
                             .addComponent(jTextField3)
-                            .addComponent(jTextField4)
                             .addComponent(jTextField5))
                         .addGap(11, 11, 11)))
                 .addContainerGap())
@@ -328,10 +313,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                 .addComponent(jLabel11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel12)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel13)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -418,10 +399,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_roundButton1ActionPerformed
 
-    private void jTextField4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField4ActionPerformed
-
     private void jTextField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField5ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField5ActionPerformed
@@ -431,7 +408,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         String branchName = jTextField1.getText().trim();
         String contactNumber = jTextField2.getText().trim();
         String address1 = jTextField3.getText().trim();
-        String address2 = jTextField4.getText().trim();
         String city = jTextField5.getText().trim();
 
         // 2. Validation (උදාහරණයක් වගේ)
@@ -443,13 +419,12 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         // 3. Database Insert operation
         try {
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
-            String sql = "INSERT INTO branch (name, conatct_number, Address_01, Address_02, City) VALUES (?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO branch (name, conatct_number, Address, City) VALUES (?, ?, ?, ?, ?)";
             java.sql.PreparedStatement pst = c.prepareStatement(sql);
 
             pst.setString(1, branchName);
             pst.setString(2, contactNumber);
             pst.setString(3, address1);
-            pst.setString(4, address2);
             pst.setString(5, city);
 
             int rowsInserted = pst.executeUpdate();
@@ -474,7 +449,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel9;
@@ -486,7 +460,6 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
     private javax.swing.JTextField jTextField8;
     private dev.ramindu.nexamarket.components.RoundButton roundButton1;

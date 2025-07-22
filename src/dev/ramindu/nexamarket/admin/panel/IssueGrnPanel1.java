@@ -30,6 +30,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -38,6 +41,20 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.table.DefaultTableModel;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.data.JRTableModelDataSource;
+import net.sf.jasperreports.engine.util.JRLoader;
+import net.sf.jasperreports.view.JasperViewer;
 
 /**
  *
@@ -56,8 +73,8 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         loadPaymentMethods();
         addCalculationListeners();
         loadCategoriesToComboBox();
-        setupReducedAmountAutoCalculation();
-        setupFinalTotalAutoCalculation();
+        loadBranches();
+        SelectBranch.addActionListener(e -> loadBranchDetails());
 
         txtTotal.setEditable(false);
 
@@ -113,7 +130,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         }
 
         txtGrnNumber.setText(generateGrnNumber());         // GRN Number
-        txtReferenceNumber.setText(generateReferenceNumber());   // Reference Number
 
         txtProductName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -131,8 +147,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         String[] columnNames = {
             "Supplier name", "Contact number", "Supplier nic", "Email address",
-            "Release date", "Grn number", "Reference number",
-            //            "Payment method",  
+            "Release date", "RRN number",
             "Item name", "Quantity", "Unit price", "Total amount",
             "Item description", "Item category"
         };
@@ -140,76 +155,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
         jTable1.setModel(tableModel);
 
-    }
-
-    private void setupFinalTotalAutoCalculation() {
-        DocumentListener listener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateFinalTotal();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateFinalTotal();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateFinalTotal();
-            }
-        };
-
-        txtTotalPayment.getDocument().addDocumentListener(listener);
-        txtReducedAmount.getDocument().addDocumentListener(listener);
-    }
-
-    private void updateFinalTotal() {
-        try {
-            String totalStr = txtTotalPayment.getText().trim();
-            String reducedStr = txtReducedAmount.getText().trim();
-
-            double total = totalStr.isEmpty() ? 0 : Double.parseDouble(totalStr);
-            double reduced = reducedStr.isEmpty() ? 0 : Double.parseDouble(reducedStr);
-
-            double finalAmount = total - reduced;
-
-            txtFinalTotal.setText(String.format("%.2f", finalAmount));
-        } catch (NumberFormatException e) {
-            txtFinalTotal.setText("Invalid");
-        }
-    }
-
-    private void setupReducedAmountAutoCalculation() {
-        DocumentListener listener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateReducedAmount();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateReducedAmount();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateReducedAmount();
-            }
-        };
-
-        txtPRDMG.getDocument().addDocumentListener(listener);
-        txtPRB.getDocument().addDocumentListener(listener);
-    }
-
-    private void updateReducedAmount() {
-        try {
-            String dmgStr = txtPRDMG.getText().trim();
-            String prbStr = txtPRB.getText().trim();
-
-            double dmg = dmgStr.isEmpty() ? 0 : Double.parseDouble(dmgStr);
-            double prb = prbStr.isEmpty() ? 0 : Double.parseDouble(prbStr);
-
-            double totalReduced = dmg + prb;
-
-            txtReducedAmount.setText(String.format("%.2f", totalReduced));
-        } catch (NumberFormatException e) {
-            txtReducedAmount.setText("Invalid input");
-        }
     }
 
     private void loadProductPrice(String productName) {
@@ -275,6 +220,41 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                 popup.show(txtProductName, 0, txtProductName.getHeight());
             }
 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void loadBranches() {
+        SelectBranch.removeAllItems();
+        try (Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234"); PreparedStatement ps = c.prepareStatement("SELECT name FROM branch"); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                SelectBranch.addItem(rs.getString("name"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadBranchDetails() {
+
+        String branchName = (String) SelectBranch.getSelectedItem();
+        if (branchName == null || branchName.isEmpty()) {
+            return;
+        }
+
+        String sql = "SELECT conatct_number, Address, City FROM branch WHERE name = ?";
+
+        try (Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234"); PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setString(1, branchName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    txtContactNumber1.setText(rs.getString("conatct_number"));
+                    txtAddress.setText(rs.getString("Address"));
+                    txtCity.setText(rs.getString("City"));
+                }
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -363,13 +343,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         String padded = String.format("%04d", randomNumber);  // always 4 digits
 
         return prefix + datePart + padded;
-    }
-
-    private String generateReferenceNumber() {
-        String prefix = "REF";
-        long timestamp = System.currentTimeMillis();  // unique millis
-
-        return prefix + timestamp;
     }
 
     private void calculateTotalAmount() {
@@ -528,11 +501,90 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         }
     }
 
+    private void generateGRNReport() {
+        try {
+            // Step 1: Table Model for Report Table
+            DefaultTableModel reportModel = new DefaultTableModel();
+            reportModel.addColumn("Item_name");
+            reportModel.addColumn("Quantity");
+            reportModel.addColumn("Unit_price");
+            reportModel.addColumn("Total_amount");
+
+            // Copy data from main JTable to report model
+            for (int i = 0; i < jTable1.getRowCount(); i++) {
+                Object[] row = {
+                    jTable1.getValueAt(i, 6), // Item_name
+                    jTable1.getValueAt(i, 7), // Quantity
+                    jTable1.getValueAt(i, 8), // Unit_price
+                    jTable1.getValueAt(i, 9) // Total_amount
+                };
+                reportModel.addRow(row);
+            }
+
+            // Step 2: Create Jasper DataSource from model
+            JRTableModelDataSource dataSource = new JRTableModelDataSource(reportModel);
+
+            // Step 3: Create and fill parameters
+            Map<String, Object> parameters = new HashMap<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+            // Payment & GRN Info
+            parameters.put("PaymentStatus", cmbPaymentMethod.getSelectedItem().toString());
+            parameters.put("GrnNumber", txtGrnNumber.getText());
+            parameters.put("ReleaseDate", sdf.format(dateExpiry.getDate()));
+
+            // Supplier Info
+            parameters.put("SupplierName", txtSupplierName.getSelectedItem().toString());
+            parameters.put("SupplierNIC", txtNIC.getText());
+            parameters.put("SupplierEmail", txtEmail.getText());
+            parameters.put("SupplierMobile", txtContactNumber.getText());
+
+            // Branch Info
+            parameters.put("BranchName", SelectBranch.getSelectedItem().toString());
+            parameters.put("BranchContactNumber", txtContactNumber1.getText());
+            parameters.put("BranchAddress", txtAddress.getText());
+            parameters.put("BranchCity", txtCity.getText());
+
+            // ✅ Summary Section – These were missing!
+            parameters.put("TotalQty", txtTotalQty.getText());
+            parameters.put("TotalPayment", txtTotalPayment.getText());
+
+            // Step 4: Load compiled Jasper file
+            InputStream reportStream = getClass().getResourceAsStream(
+                    "/dev/ramindu/nexamarket/admin/reports/GoodReturnNotes.jasper"
+            );
+
+            if (reportStream == null) {
+                throw new FileNotFoundException("Jasper report not found!");
+            }
+
+            // Step 5: Fill the report
+            JasperPrint jasperPrint = JasperFillManager.fillReport(reportStream, parameters, dataSource);
+
+            // Step 6: Show the report
+            JasperViewer.viewReport(jasperPrint, false);
+
+            // Optional: Debugging output
+            System.out.println("Row count: " + reportModel.getRowCount());
+            for (int i = 0; i < reportModel.getRowCount(); i++) {
+                System.out.println(
+                        reportModel.getValueAt(i, 0) + " | "
+                        + reportModel.getValueAt(i, 1) + " | "
+                        + reportModel.getValueAt(i, 2) + " | "
+                        + reportModel.getValueAt(i, 3)
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error generating report: " + e.getMessage());
+        }
+    }
+
     private void addRowToTable() {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
 
         String grnNumber = txtGrnNumber.getText();
-        String referenceNumber = txtReferenceNumber.getText();
         String supplierName = txtSupplierName.getSelectedItem().toString();
         String contactNumber = txtContactNumber.getText();
         String nic = txtNIC.getText();
@@ -559,7 +611,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             email,
             expiry,
             grnNumber,
-            referenceNumber,
             //            paymentMethod,
             productName,
             qty,
@@ -576,8 +627,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
     }
 
     String[] columnNames = {
-        "GRN Number",
-        "Reference Number",
+        "RNN Number",
         "Supplier Name",
         "Contact Number",
         "NIC",
@@ -599,18 +649,18 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         for (int i = 0; i < model.getRowCount(); i++) {
             try {
-                // ✔️ Column 8 = Quantity (as String like "12")
-                String qtyStr = model.getValueAt(i, 8).toString().trim();
-                int qty = Integer.parseInt(qtyStr);  // ✔️ OK
+                // 🟢 Corrected column index for Quantity: 7
+                String qtyStr = model.getValueAt(i, 7).toString().trim();
+                double qty = Double.parseDouble(qtyStr);
                 totalQty += qty;
             } catch (NumberFormatException e) {
                 System.err.println("Qty conversion error at row " + i + ": " + e.getMessage());
             }
 
             try {
-                // ✔️ Column 10 = Total Amount (like "110.00")
-                String totalStr = model.getValueAt(i, 10).toString().trim();
-                double total = Double.parseDouble(totalStr);  // ✔️ Use Double
+                // 🟢 Corrected column index for Total Amount: 9
+                String totalStr = model.getValueAt(i, 9).toString().trim();
+                double total = Double.parseDouble(totalStr);
                 totalPayment += total;
             } catch (NumberFormatException e) {
                 System.err.println("Total amount conversion error at row " + i + ": " + e.getMessage());
@@ -623,7 +673,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
     private void clearInputFields() {
         txtProductName.setText("");
-
         txtItemDescription.setText("");
         cmbItemCategory.setSelectedIndex(0);
         txtQty.setText("");
@@ -631,7 +680,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         txtTotal.setText("");
         cmbPaymentMethod.setSelectedIndex(0);
         txtGrnNumber.setText(generateGrnNumber());
-        txtReferenceNumber.setText(generateReferenceNumber());
     }
 
     /**
@@ -659,8 +707,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         txtGrnNumber = new javax.swing.JTextField();
-        jLabel10 = new javax.swing.JLabel();
-        txtReferenceNumber = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
         cmbPaymentMethod = new javax.swing.JComboBox<>();
         txtProductName = new javax.swing.JTextField();
@@ -682,20 +728,22 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         txtItemDescription = new javax.swing.JTextArea();
         dateExpiry = new dev.ramindu.nexamarket.components.CustomDatePicker();
         jButton1 = new javax.swing.JButton();
-        jLabel18 = new javax.swing.JLabel();
-        txtPRDMG = new javax.swing.JTextField();
-        jLabel19 = new javax.swing.JLabel();
-        txtPRB = new javax.swing.JTextField();
-        jLabel20 = new javax.swing.JLabel();
-        txtFinalTotal = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
         txtTotalQty = new javax.swing.JTextField();
-        jLabel22 = new javax.swing.JLabel();
-        txtReducedAmount = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         txtTotalPayment = new javax.swing.JTextField();
         jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jLabel25 = new javax.swing.JLabel();
+        SelectBranch = new javax.swing.JComboBox<>();
+        jLabel26 = new javax.swing.JLabel();
+        txtContactNumber1 = new javax.swing.JTextField();
+        txtAddress = new javax.swing.JTextField();
+        jLabel27 = new javax.swing.JLabel();
+        txtCity = new javax.swing.JTextField();
+        jLabel28 = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(1697, 833));
 
@@ -754,7 +802,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         jLabel8.setText("Release Date");
 
         jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel9.setText("GRN Number");
+        jLabel9.setText("RNN Number");
 
         txtGrnNumber.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         txtGrnNumber.addActionListener(new java.awt.event.ActionListener() {
@@ -763,18 +811,8 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             }
         });
 
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel10.setText("Reference Number");
-
-        txtReferenceNumber.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        txtReferenceNumber.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtReferenceNumberActionPerformed(evt);
-            }
-        });
-
         jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel12.setText("Payment Method");
+        jLabel12.setText("Payment Status");
 
         cmbPaymentMethod.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         cmbPaymentMethod.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -825,7 +863,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         });
 
         jLabel16.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel16.setText("Item Description");
+        jLabel16.setText("Damage Description");
 
         jLabel17.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jLabel17.setText("Item Cateogry");
@@ -875,45 +913,101 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             }
         });
 
-        jLabel18.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel18.setText("PR-DMG");
-
-        txtPRDMG.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-
-        jLabel19.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel19.setText("PR-B");
-
-        txtPRB.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-
-        jLabel20.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel20.setText("Final Total Payment");
-
-        txtFinalTotal.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-
         jLabel21.setText("Total Qty");
 
         txtTotalQty.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
 
-        jLabel22.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel22.setText("Reduced Amount");
-
-        txtReducedAmount.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-
         jButton2.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jButton2.setText("Prinit GRN");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jButton4.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jButton4.setText("Go To Dashboard");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         txtTotalPayment.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
 
         jLabel23.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jLabel23.setText("Total Payment");
 
+        jLabel24.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel24.setText("Branch Details");
+
+        jLabel25.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel25.setText("Select Branch");
+
+        SelectBranch.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        SelectBranch.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        SelectBranch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SelectBranchActionPerformed(evt);
+            }
+        });
+
+        jLabel26.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel26.setText("Contact Number");
+
+        txtContactNumber1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        txtContactNumber1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtContactNumber1ActionPerformed(evt);
+            }
+        });
+
+        txtAddress.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        txtAddress.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAddressActionPerformed(evt);
+            }
+        });
+
+        jLabel27.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel27.setText("Address");
+
+        txtCity.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        txtCity.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtCityActionPerformed(evt);
+            }
+        });
+
+        jLabel28.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel28.setText("City");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1662, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jButton1)
+                                .addContainerGap())
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel21)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(txtTotalQty, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(39, 39, 39)
+                                .addComponent(jLabel23)
+                                .addGap(18, 18, 18)
+                                .addComponent(txtTotalPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))))))
             .addGroup(layout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -928,9 +1022,14 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                                     .addComponent(jLabel3)
                                     .addComponent(jLabel4)
                                     .addComponent(jLabel5)
-                                    .addComponent(jLabel6))
+                                    .addComponent(jLabel6)
+                                    .addComponent(jLabel25)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel24, javax.swing.GroupLayout.Alignment.LEADING)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(SelectBranch, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addComponent(txtSupplierName, 0, 263, Short.MAX_VALUE)
                                     .addComponent(txtContactNumber)
                                     .addComponent(txtNIC, javax.swing.GroupLayout.Alignment.TRAILING)
@@ -942,35 +1041,36 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                                 .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.LEADING))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel8)
-                                    .addComponent(jLabel9)
-                                    .addComponent(jLabel10)
-                                    .addComponent(jLabel12))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(cmbPaymentMethod, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtGrnNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
-                                    .addComponent(txtReferenceNumber, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(dateExpiry, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel8)
+                                            .addComponent(jLabel9)
+                                            .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING))
+                                        .addGap(18, 18, 18)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(cmbPaymentMethod, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(txtGrnNumber, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                                            .addComponent(dateExpiry, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel26)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(txtContactNumber1, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addGap(40, 40, 40)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel11)
                                     .addComponent(jLabel13)
                                     .addComponent(jLabel14)
-                                    .addComponent(jLabel15))
+                                    .addComponent(jLabel15)
+                                    .addComponent(jLabel27))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txtQty)
                                     .addComponent(txtUnitPrice, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(txtProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtTotal))
+                                    .addComponent(txtProductName, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                                    .addComponent(txtTotal)
+                                    .addComponent(txtAddress))
                                 .addGap(24, 24, 24)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(roundedButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(175, 175, 175))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -979,46 +1079,23 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jLabel17)
                                                 .addGap(28, 28, 28)))
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(cmbItemCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addGap(10, 10, 10))))))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jButton1)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel21)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(txtTotalQty, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(33, 33, 33)
-                                    .addComponent(jLabel23)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(txtTotalPayment, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel19)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtPRB, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel18)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtPRDMG, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(jLabel20)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtFinalTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGap(18, 18, 18)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel22)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(txtReducedAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 1662, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(11, Short.MAX_VALUE))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                                            .addComponent(cmbItemCategory, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addGap(14, 14, 14))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(roundedButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(jLabel28))
+                                        .addGap(18, 18, 18)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(175, 175, 175))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtCity)
+                                                .addGap(14, 14, 14)))))))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1041,9 +1118,13 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                             .addComponent(jLabel4)
                             .addComponent(txtContactNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(txtNIC, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel12)
+                                .addComponent(cmbPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel5)
+                                .addComponent(txtNIC, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6)
@@ -1072,13 +1153,9 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                                             .addComponent(jLabel9)
                                             .addComponent(txtGrnNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(jLabel14)
-                                                .addComponent(txtUnitPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(jLabel10)
-                                                .addComponent(txtReferenceNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(jLabel14)
+                                            .addComponent(txtUnitPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
@@ -1087,37 +1164,38 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                                             .addComponent(cmbItemCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE))))
                                 .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel12)
-                                    .addComponent(cmbPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel15)
                                     .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(roundedButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jButton3))))))
                 .addGap(18, 18, 18)
+                .addComponent(jLabel24)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel25)
+                    .addComponent(SelectBranch, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtContactNumber1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel26)
+                    .addComponent(jLabel27)
+                    .addComponent(txtAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel28)
+                    .addComponent(txtCity, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel23)
-                        .addComponent(txtTotalPayment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtTotalPayment, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton2)
+                        .addComponent(jButton4))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel18)
-                        .addComponent(txtPRDMG, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel21)
-                        .addComponent(txtTotalQty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel22)
-                        .addComponent(txtReducedAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtTotalQty, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel19)
-                    .addComponent(txtPRB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel20)
-                    .addComponent(txtFinalTotal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4))
+                .addComponent(jButton1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1177,10 +1255,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtGrnNumberActionPerformed
 
-    private void txtReferenceNumberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtReferenceNumberActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtReferenceNumberActionPerformed
-
     private void cmbPaymentMethodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbPaymentMethodActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbPaymentMethodActionPerformed
@@ -1215,8 +1289,35 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         deleteSelectedRow();
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        generateGRNReport();
+
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void SelectBranchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SelectBranchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_SelectBranchActionPerformed
+
+    private void txtContactNumber1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtContactNumber1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtContactNumber1ActionPerformed
+
+    private void txtAddressActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAddressActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtAddressActionPerformed
+
+    private void txtCityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCityActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtCityActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton4ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> SelectBranch;
     private javax.swing.JComboBox<String> cmbItemCategory;
     private javax.swing.JComboBox<String> cmbPaymentMethod;
     private dev.ramindu.nexamarket.components.CustomDatePicker dateExpiry;
@@ -1225,7 +1326,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -1233,13 +1333,14 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1250,21 +1351,20 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JTable jTable1;
     private dev.ramindu.nexamarket.components.RoundedButton roundedButton1;
+    private javax.swing.JTextField txtAddress;
+    private javax.swing.JTextField txtCity;
     private javax.swing.JTextField txtContactNumber;
+    private javax.swing.JTextField txtContactNumber1;
     private javax.swing.JTextField txtEmail;
-    private javax.swing.JTextField txtFinalTotal;
     private javax.swing.JTextField txtGrnNumber;
     private javax.swing.JTextArea txtItemDescription;
     private javax.swing.JTextField txtNIC;
-    private javax.swing.JTextField txtPRB;
-    private javax.swing.JTextField txtPRDMG;
     private javax.swing.JTextField txtProductName;
     private javax.swing.JTextField txtQty;
-    private javax.swing.JTextField txtReducedAmount;
-    private javax.swing.JTextField txtReferenceNumber;
     private javax.swing.JComboBox<String> txtSupplierName;
     private javax.swing.JTextField txtTotal;
     private javax.swing.JTextField txtTotalPayment;
