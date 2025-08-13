@@ -35,27 +35,24 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
         initComponents();
         loadCashiersToTable();
 
-        // Set Header Style
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
+
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
+
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -67,7 +64,7 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245));
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -75,12 +72,12 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -89,7 +86,7 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
+
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
@@ -124,7 +121,7 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
 
             jTable1.setModel(model);
 
-            // ✅ Re-attach the row selection listener after model is set
+            
             attachRowSelectionListener();
 
         } catch (Exception e) {
@@ -133,13 +130,13 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
     }
 
     private void clearInputFields() {
-        jTextField1.setText(""); // First Name
-        jTextField2.setText(""); // Last Name
-        jTextField3.setText(""); // Email
-        jTextField4.setText(""); // Password
-        jTextField5.setText(""); // Mobile
-        jTextField6.setText(""); // Username
-        jTextField7.setText(""); // Date of Birth
+        jTextField1.setText(""); 
+        jTextField2.setText(""); 
+        jTextField3.setText(""); 
+        jTextField4.setText(""); 
+        jTextField5.setText(""); 
+        jTextField6.setText(""); 
+        jTextField7.setText(""); 
     }
 
     /**
@@ -412,7 +409,7 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
         String password = jTextField4.getText();
         String mobile = jTextField5.getText();
         String username = jTextField6.getText();
-        String dob = jTextField7.getText(); // Format: YYYY-MM-DD
+        String dob = jTextField7.getText(); 
 
         if (fname.isEmpty() || lname.isEmpty() || email.isEmpty() || password.isEmpty()
                 || mobile.isEmpty() || username.isEmpty() || dob.isEmpty()) {
@@ -438,8 +435,8 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
             int result = ps.executeUpdate();
             if (result > 0) {
                 javax.swing.JOptionPane.showMessageDialog(this, "Cashier added successfully.");
-                loadCashiersToTable(); // Refresh table
-                clearInputFields(); // Optional: Clear after adding
+                loadCashiersToTable(); 
+                clearInputFields(); 
             } else {
                 javax.swing.JOptionPane.showMessageDialog(this, "Failed to add cashier.");
             }
@@ -481,7 +478,7 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
                         JOptionPane.showMessageDialog(this, "Cashier deleted successfully.");
-                        loadCashiersToTable(); // Refresh
+                        loadCashiersToTable(); 
                         selectedCashierId = -1;
                         jButton2.setText("Deactivate Cashier");
                     }
@@ -498,10 +495,10 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
         jTable1.getSelectionModel().addListSelectionListener(e -> {
             int selectedRow = jTable1.getSelectedRow();
             if (selectedRow != -1) {
-                selectedCashierId = (int) jTable1.getValueAt(selectedRow, 0); // ID
-                String status = jTable1.getValueAt(selectedRow, 6).toString(); // Status column
+                selectedCashierId = (int) jTable1.getValueAt(selectedRow, 0); 
+                String status = jTable1.getValueAt(selectedRow, 6).toString(); 
 
-                // Case-insensitive comparison
+                
                 if (status.equalsIgnoreCase("Active")) {
                     selectedStatusId = 1;
                     jButton2.setText("Deactivate Cashier");
@@ -534,13 +531,13 @@ public class ManageCashiersPanel extends javax.swing.JPanel {
                     if (rows > 0) {
                         JOptionPane.showMessageDialog(this, "Cashier " + message + "d successfully.");
 
-                        // Update button text immediately
+                      
                         jButton2.setText(newStatusId == 2 ? "Activate Cashier" : "Deactivate Cashier");
                         selectedStatusId = newStatusId;
 
                         loadCashiersToTable();
 
-                        // Reselect row
+                        
                         for (int row = 0; row < jTable1.getRowCount(); row++) {
                             int id = (int) jTable1.getValueAt(row, 0);
                             if (id == selectedCashierId) {

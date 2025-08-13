@@ -34,27 +34,24 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
         initComponents();
         loadSuppliersToTable();
         loadSupplyingCategories();
-        // Set Header Style
+ 
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        header.setBackground(new Color(0, 204, 102)); // light green
+        header.setBackground(new Color(0, 204, 102));
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
+
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -66,7 +63,7 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245)); 
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -74,12 +71,11 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -88,7 +84,6 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
@@ -97,8 +92,8 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
         jTable1.getSelectionModel().addListSelectionListener(e -> {
             int selectedRow = jTable1.getSelectedRow();
             if (selectedRow != -1) {
-                selectedSupplierId = (int) jTable1.getValueAt(selectedRow, 0); // ID
-                String status = jTable1.getValueAt(selectedRow, 7).toString(); // Status column
+                selectedSupplierId = (int) jTable1.getValueAt(selectedRow, 0);
+                String status = jTable1.getValueAt(selectedRow, 7).toString(); 
 
                 if (status.equalsIgnoreCase("Active")) {
                     selectedStatusId = 1;
@@ -153,12 +148,12 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
     }
 
     private void clearInputFields() {
-        jTextField1.setText(""); // First Name
-        jTextField2.setText(""); // Last Name
-        jTextField3.setText(""); // Email
-        jTextField4.setText(""); // Password
-        jTextField5.setText(""); // Mobile
-        jTextField6.setText(""); // Username
+        jTextField1.setText(""); 
+        jTextField2.setText(""); 
+        jTextField3.setText(""); 
+        jTextField4.setText(""); 
+        jTextField5.setText(""); 
+        jTextField6.setText(""); 
     }
 
     private void loadSupplyingCategories() {
@@ -168,7 +163,7 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
             PreparedStatement ps = c.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
-            jComboBoxCategory.removeAllItems(); //
+            jComboBoxCategory.removeAllItems(); 
 
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -458,14 +453,14 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
         String email = jTextField3.getText();
         String mobile = jTextField4.getText();
         String nic = jTextField5.getText();
-        String dob = jTextField6.getText(); // yyyy-MM-dd format
-        int categoryId = getSelectedCategoryId(); // From JComboBox only for Category
+        String dob = jTextField6.getText(); 
+        int categoryId = getSelectedCategoryId(); 
 
-        // Status fixed to Active (status_id = 1)
+       
         int statusId = 1;
 
         if (fname.isEmpty() || lname.isEmpty() || email.isEmpty() || mobile.isEmpty() || nic.isEmpty() || dob.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "කරුණාකර සියලුම fields පුරවන්න.");
+            JOptionPane.showMessageDialog(this, "all fields are empty");
             return;
         }
 
@@ -481,7 +476,7 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
             ps.setString(5, nic);
             ps.setString(6, dob);
             ps.setInt(7, categoryId);
-            ps.setInt(8, statusId);  // always Active
+            ps.setInt(8, statusId);  
 
             int result = ps.executeUpdate();
             if (result > 0) {
@@ -523,7 +518,7 @@ public class ManageSuppliersPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
         if (selectedSupplierId != -1) {
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "ඔබට මෙම Supplier එක ඉවත් කරන්න අවශ්‍යද?",
+                    "Are You Sure to Delete This Supplier?",
                     "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {

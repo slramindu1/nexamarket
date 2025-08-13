@@ -32,17 +32,16 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
      */
     private void loadCategoryData() {
         try {
-            // Setup table model
+           
             DefaultTableModel model = new DefaultTableModel();
             model.addColumn("ID");
             model.addColumn("Category Name");
 
-            // Connect to database
+         
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM category ORDER BY id");
 
-            // Load data into model
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
@@ -51,7 +50,6 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
 
             jTable1.setModel(model);
 
-            // Reapply your custom cell renderer
             DefaultTableCellRenderer cellRenderer = (DefaultTableCellRenderer) jTable1.getDefaultRenderer(Object.class);
             for (int i = 0; i < jTable1.getColumnCount(); i++) {
                 jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
@@ -66,27 +64,25 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
         initComponents();
         loadCategoryData();
 
-        // Set Header Style
+  
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
+
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
+
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -98,7 +94,7 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245)); 
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -106,12 +102,12 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -120,7 +116,6 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
@@ -303,7 +298,7 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
         }
 
         try {
-            // Get ID from first column (ID column)
+          
             int categoryId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
 
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
@@ -313,7 +308,7 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
             stmt.executeUpdate(sql);
 
             javax.swing.JOptionPane.showMessageDialog(this, "Category deleted successfully.");
-            loadCategoryData(); // refresh table
+            loadCategoryData(); 
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -334,14 +329,13 @@ public class CateogryRegistrationPanel extends javax.swing.JPanel {
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement stmt = con.createStatement();
 
-            // Insert the category
             String sql = "INSERT INTO category (name) VALUES ('" + categoryName + "')";
             stmt.executeUpdate(sql);
 
             javax.swing.JOptionPane.showMessageDialog(this, "Category added successfully.");
 
-            jTextField1.setText(""); // Clear input field
-            loadCategoryData();      // Reload table
+            jTextField1.setText("");
+            loadCategoryData();      
 
         } catch (java.sql.SQLIntegrityConstraintViolationException ex) {
             javax.swing.JOptionPane.showMessageDialog(this, "Category already exists.");

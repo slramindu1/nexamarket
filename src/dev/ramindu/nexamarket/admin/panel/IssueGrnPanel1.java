@@ -78,28 +78,27 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         txtTotal.setEditable(false);
 
-        // Set Header Style
-        // Set Header Style
+       
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
+
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
+
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
+
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
+
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -111,7 +110,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245));
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -119,17 +118,17 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
 
-        txtGrnNumber.setText(generateGrnNumber());         // GRN Number
+        txtGrnNumber.setText(generateGrnNumber());         
 
         txtProductName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -167,7 +166,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
             if (rs.next()) {
                 String price = rs.getString("price");
-                txtUnitPrice.setText(price); // 👉 Set unit price
+                txtUnitPrice.setText(price); 
             } else {
                 txtUnitPrice.setText("");
             }
@@ -182,20 +181,20 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
     private void suggestProductNames() {
         String text = txtProductName.getText().trim();
         if (text.isEmpty()) {
-            popup.setVisible(false); // ❗ hide popup if field empty
+            popup.setVisible(false);
             return;
         }
 
         try {
-            Connection con = DB.getConnection(); // ඔබගේ DB connection method එක
+            Connection con = DB.getConnection(); 
             String sql = "SELECT name FROM product WHERE name LIKE ?";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, text + "%");
 
             ResultSet rs = ps.executeQuery();
 
-            popup.setVisible(false);      // 🔁 hide previous
-            popup.removeAll();            // 🔁 clear previous items
+            popup.setVisible(false);      
+            popup.removeAll();           
 
             boolean hasResults = false;
 
@@ -210,7 +209,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                     popup.setVisible(false);
                     loadProductDescription(name);
                     loadProductCategory(name);
-                    loadProductPrice(name);  // ✅ this line must exist!
+                    loadProductPrice(name);  
                 });
 
                 popup.add(item);
@@ -270,11 +269,11 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
             if (rs.next()) {
                 String categoryName = rs.getString("name").trim();
-                System.out.println("Loaded category: " + categoryName); // 🟢 Debug
+                System.out.println("Loaded category: " + categoryName); 
 
                 for (int i = 0; i < cmbItemCategory.getItemCount(); i++) {
                     String item = cmbItemCategory.getItemAt(i).toString().trim();
-                    System.out.println("Comparing: " + item); // 🟢 Debug
+                    System.out.println("Comparing: " + item); 
                     if (item.equalsIgnoreCase(categoryName)) {
                         cmbItemCategory.setSelectedIndex(i);
                         System.out.println("Matched and set!");
@@ -290,12 +289,12 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
     private void loadCategoriesToComboBox() {
         try {
-            Connection con = DB.getConnection(); // ඔබේ connection method එක
+            Connection con = DB.getConnection();
             String sql = "SELECT name FROM category";
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
-            cmbItemCategory.removeAllItems(); // Clear old items
+            cmbItemCategory.removeAllItems(); 
 
             while (rs.next()) {
                 String categoryName = rs.getString("name");
@@ -309,7 +308,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
     private void loadProductDescription(String name) {
         try {
-            Connection con = DB.getConnection(); // ඔබේ DB connection method එක
+            Connection con = DB.getConnection(); 
             String sql = "SELECT description FROM product WHERE name = ?";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, name);
@@ -318,9 +317,9 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
             if (rs.next()) {
                 String description = rs.getString("description");
-                txtItemDescription.setText(description); // 👉 set description to text area
+                txtItemDescription.setText(description);
             } else {
-                txtItemDescription.setText(""); // description නැත්නම් clear කරන්න
+                txtItemDescription.setText(""); 
             }
 
         } catch (Exception ex) {
@@ -339,8 +338,8 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         String prefix = "GRN";
         String datePart = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
 
-        int randomNumber = (int) (Math.random() * 10000);  // 0000 - 9999
-        String padded = String.format("%04d", randomNumber);  // always 4 digits
+        int randomNumber = (int) (Math.random() * 10000);  
+        String padded = String.format("%04d", randomNumber);  
 
         return prefix + datePart + padded;
     }
@@ -352,7 +351,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             double total = quantity * unitPrice;
             txtTotal.setText(String.format("%.2f", total));
         } catch (NumberFormatException e) {
-            // Invalid input: clear total
+            
             txtTotal.setText("");
         }
     }
@@ -394,13 +393,13 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             PreparedStatement ps = c.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
 
-            txtSupplierName.removeAllItems(); // Clear old
+            txtSupplierName.removeAllItems();
 
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
 
-                // ❗ Cast combo box as raw JComboBox
+               
                 ((javax.swing.JComboBox) txtSupplierName).addItem(new SupplierItem(id, fullName));
             }
 
@@ -428,7 +427,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         @Override
         public String toString() {
-            return name; // ComboBox එකේ පේන්න නම
+            return name; 
         }
     }
 
@@ -439,7 +438,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             PreparedStatement ps = c.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
 
-            cmbPaymentMethod.removeAllItems(); // Clear old items
+            cmbPaymentMethod.removeAllItems(); 
 
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -472,7 +471,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         @Override
         public String toString() {
-            return name; // ComboBox එකට පේන්න ඕන නම
+            return name; 
         }
     }
 
@@ -488,7 +487,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                 String mobile = rs.getString("mobile");
                 String nic = rs.getString("Nic");
 
-                // ඔයාගේ input fields වලට set කරන්න
+              
                 txtEmail.setText(email);
                 txtContactNumber.setText(mobile);
                 txtNIC.setText(nic);
@@ -503,53 +502,53 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
     private void generateGRNReport() {
         try {
-            // Step 1: Table Model for Report Table
+    
             DefaultTableModel reportModel = new DefaultTableModel();
             reportModel.addColumn("Item_name");
             reportModel.addColumn("Quantity");
             reportModel.addColumn("Unit_price");
             reportModel.addColumn("Total_amount");
 
-            // Copy data from main JTable to report model
+  
             for (int i = 0; i < jTable1.getRowCount(); i++) {
                 Object[] row = {
-                    jTable1.getValueAt(i, 6), // Item_name
-                    jTable1.getValueAt(i, 7), // Quantity
-                    jTable1.getValueAt(i, 8), // Unit_price
-                    jTable1.getValueAt(i, 9) // Total_amount
+                    jTable1.getValueAt(i, 6), 
+                    jTable1.getValueAt(i, 7), 
+                    jTable1.getValueAt(i, 8), 
+                    jTable1.getValueAt(i, 9) 
                 };
                 reportModel.addRow(row);
             }
 
-            // Step 2: Create Jasper DataSource from model
+          
             JRTableModelDataSource dataSource = new JRTableModelDataSource(reportModel);
 
-            // Step 3: Create and fill parameters
+           
             Map<String, Object> parameters = new HashMap<>();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
-            // Payment & GRN Info
+           
             parameters.put("PaymentStatus", cmbPaymentMethod.getSelectedItem().toString());
             parameters.put("GrnNumber", txtGrnNumber.getText());
             parameters.put("ReleaseDate", sdf.format(dateExpiry.getDate()));
 
-            // Supplier Info
+        
             parameters.put("SupplierName", txtSupplierName.getSelectedItem().toString());
             parameters.put("SupplierNIC", txtNIC.getText());
             parameters.put("SupplierEmail", txtEmail.getText());
             parameters.put("SupplierMobile", txtContactNumber.getText());
 
-            // Branch Info
+          
             parameters.put("BranchName", SelectBranch.getSelectedItem().toString());
             parameters.put("BranchContactNumber", txtContactNumber1.getText());
             parameters.put("BranchAddress", txtAddress.getText());
             parameters.put("BranchCity", txtCity.getText());
 
-            // ✅ Summary Section – These were missing!
+            
             parameters.put("TotalQty", txtTotalQty.getText());
             parameters.put("TotalPayment", txtTotalPayment.getText());
 
-            // Step 4: Load compiled Jasper file
+            
             InputStream reportStream = getClass().getResourceAsStream(
                     "/dev/ramindu/nexamarket/admin/reports/GoodReturnNotes.jasper"
             );
@@ -558,13 +557,13 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
                 throw new FileNotFoundException("Jasper report not found!");
             }
 
-            // Step 5: Fill the report
+        
             JasperPrint jasperPrint = JasperFillManager.fillReport(reportStream, parameters, dataSource);
 
-            // Step 6: Show the report
+            
             JasperViewer.viewReport(jasperPrint, false);
 
-            // Optional: Debugging output
+         
             System.out.println("Row count: " + reportModel.getRowCount());
             for (int i = 0; i < reportModel.getRowCount(); i++) {
                 System.out.println(
@@ -595,7 +594,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         String qty = txtQty.getText();
         String unitPrice = txtUnitPrice.getText();
         String total = txtTotal.getText();
-//        String paymentMethod = cmbPaymentMethod.getSelectedItem().toString();
 
         Date expiryDate = dateExpiry.getDate();
         String expiry = "";
@@ -611,7 +609,6 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             email,
             expiry,
             grnNumber,
-            //            paymentMethod,
             productName,
             qty,
             unitPrice,
@@ -638,7 +635,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         "Quantity",
         "Unit Price",
         "Expiry Date",
-        "Total", //        "Payment Method"
+        "Total"
     };
 
     private void updateTotalFields() {
@@ -649,7 +646,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
 
         for (int i = 0; i < model.getRowCount(); i++) {
             try {
-                // 🟢 Corrected column index for Quantity: 7
+               
                 String qtyStr = model.getValueAt(i, 7).toString().trim();
                 double qty = Double.parseDouble(qtyStr);
                 totalQty += qty;
@@ -658,7 +655,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             }
 
             try {
-                // 🟢 Corrected column index for Total Amount: 9
+               
                 String totalStr = model.getValueAt(i, 9).toString().trim();
                 double total = Double.parseDouble(totalStr);
                 totalPayment += total;
@@ -1215,7 +1212,7 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
         int selectedRow = jTable1.getSelectedRow();
 
         if (selectedRow != -1) {
-            // 🟡 Show confirmation dialog
+          
             int confirm = JOptionPane.showConfirmDialog(
                     this,
                     "Are you sure you want to delete the selected row?",
@@ -1224,13 +1221,13 @@ public class IssueGrnPanel1 extends javax.swing.JPanel {
             );
 
             if (confirm == JOptionPane.YES_OPTION) {
-                // ✅ User confirmed deletion
+                
                 DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
                 model.removeRow(selectedRow);
             }
 
         } else {
-            // ❌ No row selected
+           
             JOptionPane.showMessageDialog(
                     this,
                     "Please select a row to delete.",

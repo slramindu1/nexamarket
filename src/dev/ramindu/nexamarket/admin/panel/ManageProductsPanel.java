@@ -39,27 +39,25 @@ public class ManageProductsPanel extends javax.swing.JPanel {
         loadProductData();
         loadComboBoxes();
 
-        // Set Header Style
+      
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
+
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
+
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -71,7 +69,7 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245)); 
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -79,12 +77,11 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -93,21 +90,19 @@ public class ManageProductsPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
 
     void loadProductData() {
         DefaultTableModel model = new DefaultTableModel();
-        // Add "Description" to the column identifiers
+ 
         model.setColumnIdentifiers(new String[]{
             "ID", "Product", "Barcode", "Price", "Qty", "Brand", "Category", "Branch", "Description"
         });
 
         try {
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
-            // Include description in your SQL query
             String sql = "SELECT p.id, p.name, p.barcode, p.price, p.quantity, b.name AS brand, "
                     + "c.name AS category, br.name AS branch, p.description "
                     + "FROM product p "
@@ -128,7 +123,7 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                     rs.getString("brand"),
                     rs.getString("category"),
                     rs.getString("branch"),
-                    rs.getString("description") // Add description to the row
+                    rs.getString("description") 
                 });
             }
 
@@ -146,7 +141,7 @@ public class ManageProductsPanel extends javax.swing.JPanel {
     private void loadComboBoxes() {
         try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234")) {
 
-            // 🧃 Brand Combo Box Load
+            
             ResultSet rsBrand = con.prepareStatement("SELECT id, name FROM brand").executeQuery();
             jComboBox1.removeAllItems();
             while (rsBrand.next()) {
@@ -155,7 +150,7 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                 jComboBox1.addItem(id + " - " + name);
             }
 
-            // 🥕 Category Combo Box Load
+            
             ResultSet rsCat = con.prepareStatement("SELECT id, name FROM category").executeQuery();
             jComboBox2.removeAllItems();
             while (rsCat.next()) {
@@ -164,7 +159,7 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                 jComboBox2.addItem(id + " - " + name);
             }
 
-            // 🏬 Branch Combo Box Load
+            
             ResultSet rsBranch = con.prepareStatement("SELECT id, name FROM branch").executeQuery();
             jComboBox3.removeAllItems();
             while (rsBranch.next()) {
@@ -523,15 +518,15 @@ public class ManageProductsPanel extends javax.swing.JPanel {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         String productName = jTextField1.getText().trim();
-        String description = jTextArea1.getText().trim(); // ✅ correct description field
+        String description = jTextArea1.getText().trim(); 
         int brandId = Integer.parseInt(jComboBox1.getSelectedItem().toString().split(" - ")[0]);
         int categoryId = Integer.parseInt(jComboBox2.getSelectedItem().toString().split(" - ")[0]);
         int branchId = Integer.parseInt(jComboBox3.getSelectedItem().toString().split(" - ")[0]);
 
-        String barcode = ""; // ⛔ You MUST add a barcode text field (e.g., jTextField4)
+        String barcode = ""; 
 
         try {
-            barcode = jTextField4.getText().trim(); // ✅ Add this field to your form!
+            barcode = jTextField4.getText().trim();
             double price = Double.parseDouble(jTextField3.getText().trim());
             int quantity = Integer.parseInt(jTextField2.getText().trim());
 
@@ -540,17 +535,17 @@ public class ManageProductsPanel extends javax.swing.JPanel {
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setString(1, productName);
-            ps.setString(2, barcode);       // ✅ barcode added
+            ps.setString(2, barcode);       
             ps.setString(3, description);
             ps.setInt(4, brandId);
             ps.setInt(5, categoryId);
             ps.setInt(6, branchId);
-            ps.setDouble(7, price);         // ✅ price added
-            ps.setInt(8, quantity);         // ✅ quantity added
+            ps.setDouble(7, price);         
+            ps.setInt(8, quantity);         
 
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Product එක add වුණා!");
-            loadProductData(); // refresh table
+            loadProductData(); 
 
             ps.close();
             con.close();

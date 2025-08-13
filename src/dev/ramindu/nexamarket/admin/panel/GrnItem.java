@@ -10,7 +10,7 @@ public class GrnItem {
     private double unitPrice;
     private double totalAmount;
 
-    // Constructor
+ 
     public GrnItem(String itemName, int quantity, double unitPrice, double totalAmount) {
         this.itemName = itemName;
         this.quantity = quantity;
@@ -18,7 +18,6 @@ public class GrnItem {
         this.totalAmount = totalAmount;
     }
 
-    // Getters
     public String getItemName() { return itemName; }
     public int getQuantity() { return quantity; }
     public double getUnitPrice() { return unitPrice; }

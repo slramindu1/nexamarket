@@ -226,7 +226,7 @@ public class LoginScreen extends javax.swing.JDialog {
                     if (positionId == 1) {
                         new dev.ramindu.nexamarket.admin.gui.AdminHomeScreen(user).setVisible(true);
                     } else if (positionId == 2) {
-//                        new dev.ramindu.nexamarket.cashier.gui.CashierHomeScreen(user).setVisible(true);
+                        new dev.ramindu.nexamarket.cashier.gui.CashierHomeScreen(user).setVisible(true);
                         System.out.println("Comment On the path");
                     } else {
                         JOptionPane.showMessageDialog(this, "Unknown position. Please contact admin.", "Error", JOptionPane.ERROR_MESSAGE);

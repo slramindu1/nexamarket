@@ -32,15 +32,14 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
      */
     private void loadBrandData() {
         try {
-            // Connect to the database
+       
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement st = con.createStatement();
             ResultSet rs = st.executeQuery("SELECT * FROM brand");
 
-            // Set table columns
             DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Brand Name"}, 0);
 
-            // Loop through result set and add rows to table
+ 
             while (rs.next()) {
                 int id = rs.getInt("id");
                 String name = rs.getString("name");
@@ -57,27 +56,24 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
     public BrandRegistrationPanel() {
         initComponents();
         loadBrandData();
-        // Set Header Style
+      
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
+
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -89,7 +85,7 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245));
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -97,12 +93,12 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER); 
                 return c;
             }
         };
 
-// Apply to all columns
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -111,7 +107,6 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
@@ -287,7 +282,6 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
             return;
         }
 
-        // Get brand ID from selected row
         int brandId = (int) jTable1.getValueAt(selectedRow, 0);
         String brandName = (String) jTable1.getValueAt(selectedRow, 1);
 
@@ -303,7 +297,7 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
                 st.executeUpdate("DELETE FROM brand WHERE id = " + brandId);
 
                 javax.swing.JOptionPane.showMessageDialog(this, "Brand deleted successfully!", "Deleted", javax.swing.JOptionPane.INFORMATION_MESSAGE);
-                loadBrandData(); // Refresh table
+                loadBrandData();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -325,14 +319,14 @@ public class BrandRegistrationPanel extends javax.swing.JPanel {
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement st = con.createStatement();
 
-            // Insert new brand
+         
             String query = "INSERT INTO brand (name) VALUES ('" + brandName + "')";
             st.executeUpdate(query);
 
             javax.swing.JOptionPane.showMessageDialog(this, "Brand added successfully!", "Success", javax.swing.JOptionPane.INFORMATION_MESSAGE);
 
-            jTextField1.setText(""); // clear input field
-            loadBrandData(); // refresh table
+            jTextField1.setText(""); 
+            loadBrandData(); 
 
         } catch (java.sql.SQLIntegrityConstraintViolationException e) {
             javax.swing.JOptionPane.showMessageDialog(this, "Brand already exists!", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);

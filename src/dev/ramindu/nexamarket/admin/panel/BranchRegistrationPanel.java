@@ -34,27 +34,26 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         initComponents();
         loadBranchDataToTable();
 
-        // Set Header Style
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102)); // light green
         header.setForeground(Color.WHITE);
         header.setPreferredSize(new Dimension(header.getWidth(), 35));
 
-// Set Row Height and Grid
+
         jTable1.setRowHeight(32);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
 
-// Remove borders
+
         jTable1.setBorder(null);
         ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
 
-// Font for cells
+
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
+
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -66,7 +65,7 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                     if (row % 2 == 0) {
                         c.setBackground(Color.WHITE);
                     } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
+                        c.setBackground(new Color(245, 245, 245)); 
                     }
                     c.setForeground(Color.BLACK);
                 } else {
@@ -74,12 +73,12 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
                     c.setForeground(Color.WHITE);
                 }
 
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER);
                 return c;
             }
         };
 
-// Apply to all columns
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
             jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
@@ -88,25 +87,24 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         UIManager.put("TextComponent.arc", 20);
         jTextField8.putClientProperty("JTextField.padding", new Insets(5, 20, 5, 10));
 
-// Add placeholder text:
         jTextField8.putClientProperty("JTextField.placeholderText", "Search Cashier...");
 
     }
 
     private void loadBranchDataToTable() {
-        // JTable එකේ column names set කරන්න
+     
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new Object[]{"ID", "Branch Name", "Contact Number", "Address", "City"});
 
         try {
-            // Inline connection
+        
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             Statement stmt = c.createStatement();
             String sql = "SELECT id, name, conatct_number, Address, City FROM branch";
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                // Data row එකක් create කරන්න
+                
                 Object[] row = new Object[6];
                 row[0] = rs.getInt("id");
                 row[1] = rs.getString("name");
@@ -358,21 +356,21 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         int selectedRow = jTable1.getSelectedRow();
 
         if (selectedRow == -1) {
-            // Row එකක් select කරලා නෑ නම් warning එකක් පෙන්වන්න
+         
             javax.swing.JOptionPane.showMessageDialog(this, "Please select a branch to delete.", "Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // 2. Confirm dialog එකක් දාන්න (optional)
+     
         int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this branch?", "Confirm Delete", javax.swing.JOptionPane.YES_NO_OPTION);
         if (confirm != javax.swing.JOptionPane.YES_OPTION) {
-            return;  // User said No, delete නොකරන්න
+            return;  
         }
 
-        // 3. Delete operation
+     
         try {
             // JTable model එකෙන් ID ගන්න (id එක first column කියලා assume කරනවා)
-            Object idObj = jTable1.getValueAt(selectedRow, 0);  // ID column index = 0
+            Object idObj = jTable1.getValueAt(selectedRow, 0);  
             int branchId = Integer.parseInt(idObj.toString());
 
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
@@ -384,8 +382,8 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
 
             if (rowsDeleted > 0) {
                 javax.swing.JOptionPane.showMessageDialog(this, "Branch deleted successfully!");
-                loadBranchDataToTable();  // JTable update කරන්න
-                clearFields();            // Fields clear කරන්න
+                loadBranchDataToTable();  
+                clearFields();            
             } else {
                 javax.swing.JOptionPane.showMessageDialog(this, "Branch deletion failed.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             }
@@ -410,13 +408,12 @@ public class BranchRegistrationPanel extends javax.swing.JPanel {
         String address1 = jTextField3.getText().trim();
         String city = jTextField5.getText().trim();
 
-        // 2. Validation (උදාහරණයක් වගේ)
+      
         if (branchName.isEmpty() || contactNumber.isEmpty() || address1.isEmpty() || city.isEmpty()) {
             javax.swing.JOptionPane.showMessageDialog(this, "Please fill all required fields (Branch Name, Contact, Address 1, City)", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             return;  // Save කරන්න එපා, fields පූරණය කරන්න කියලා return වෙනවා
         }
 
-        // 3. Database Insert operation
         try {
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
             String sql = "INSERT INTO branch (name, conatct_number, Address, City) VALUES (?, ?, ?, ?, ?)";

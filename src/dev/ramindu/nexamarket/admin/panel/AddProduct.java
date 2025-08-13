@@ -42,16 +42,16 @@ public class AddProduct extends javax.swing.JDialog {
                 }
             }
         });
-        // Setup table columns FIRST
+      
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
             "ID", "Name", "Barcode", "Buying Price", "Selling Price", "Quantity", "Brand", "Category"
         });
         jTable1.setModel(model);
 
-        loadProductData(); // Load product data after model set
+        loadProductData(); 
 
-        // Table header styling
+  
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         header.setBackground(new Color(0, 204, 102));
@@ -66,7 +66,7 @@ public class AddProduct extends javax.swing.JDialog {
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         jTable1.setForeground(Color.BLACK);
 
-        // Alternate row colors
+        
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -97,7 +97,7 @@ public class AddProduct extends javax.swing.JDialog {
 
     private void loadProductData() {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.setRowCount(0); // Clear existing rows
+        model.setRowCount(0); 
 
         try {
             Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234");

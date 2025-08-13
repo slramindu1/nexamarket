@@ -48,7 +48,6 @@ public class ProfilePanel extends javax.swing.JPanel {
         jLabel7.setText(user.getFirstName() + " " + user.getLastName());
         jLabel8.setText(user.getEmail());
 
-        // Profile image DB එකෙන් load කරන්න
         try {
             Connection con = dev.ramindu.nexamarket.utils.DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement("SELECT profile_image FROM user WHERE id=?");
@@ -235,11 +234,11 @@ public class ProfilePanel extends javax.swing.JPanel {
                 if (updated > 0) {
                     JOptionPane.showMessageDialog(this, "Profile image updated successfully.");
 
-                    // ✅ Save to project folder also
+                  
                     File dest = new File("src/dev/ramindu/nexamarket/profileImage/" + user.getId() + ".jpg");
                     Files.copy(selectedFile.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-                    // ✅ Show in UI
+                  
                     imageAvatar1.setImage(new ImageIcon(imageData));
                 } else {
                     JOptionPane.showMessageDialog(this, "Failed to update profile image.");

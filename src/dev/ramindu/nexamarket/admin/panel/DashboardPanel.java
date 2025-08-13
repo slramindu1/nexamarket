@@ -4,94 +4,74 @@
  */
 package dev.ramindu.nexamarket.admin.panel;
 
-/**
- *
- * @author Ramindu
- */
-import dev.ramindu.nexamarket.components.TimelineChartPanel;
-import dev.ramindu.nexamarket.components.chart.ModelChart;
-import dev.ramindu.nexamarket.utils.NumberAnimator;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import static javax.swing.SwingConstants.CENTER;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
+/**
+ *
+ * @author Ramindu
+ */
 public class DashboardPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form DashboardPanel
      */
     public DashboardPanel() {
-        initComponents(); // GUI Builder-initialized components
-        loadDashboardData();
-        // Set circular progress value after initialization
-        circularProgressBar.setProgress(90);  // ✅ Only once, after init
+        initComponents(); 
+        loadTransactionDetails();
+        loadBestSellingProducts();
+        loadWeeklyEarnings();
+        loadWeeklyPercentageIncrease();
+        loadWeeklyStats();
+        loadWeeklySalesCount();
+        loadMonthlyIncome();
 
-        // ➤ Supermarket Product Stock Data (example percentages)
-        stackedProgressBar1.clearSections();
-        stackedProgressBar1.addSection("Rice", new Color(255, 99, 132), 15);        // Pink-red
-        stackedProgressBar1.addSection("Dhal", new Color(255, 159, 64), 10);        // Orange
-        stackedProgressBar1.addSection("Sugar", new Color(255, 205, 86), 10);       // Yellow
-        stackedProgressBar1.addSection("Milk", new Color(75, 192, 192), 10);        // Teal
-        stackedProgressBar1.addSection("Fruits", new Color(54, 162, 235), 20);      // Blue
-        stackedProgressBar1.addSection("Vegetables", new Color(153, 102, 255), 25); // Purple
-        stackedProgressBar1.addSection("Other", new Color(201, 203, 207), 10);      // Grey
-
-        lineChart.addLegend("Income", new Color(12, 84, 175), new Color(0, 108, 247));
-        lineChart.addLegend("Expense", new Color(54, 4, 143), new Color(104, 49, 200));
-        lineChart.addLegend("Profit", new Color(5, 125, 0), new Color(95, 209, 69));
-        lineChart.addLegend("Cost", new Color(186, 37, 37), new Color(241, 100, 120));
-        lineChart.addData(new ModelChart("January", new double[]{500, 200, 80, 89}));
-        lineChart.addData(new ModelChart("February", new double[]{600, 750, 90, 150}));
-        lineChart.addData(new ModelChart("March", new double[]{200, 350, 460, 900}));
-        lineChart.addData(new ModelChart("April", new double[]{480, 150, 750, 700}));
-        lineChart.addData(new ModelChart("May", new double[]{350, 540, 300, 150}));
-        lineChart.addData(new ModelChart("June", new double[]{190, 280, 81, 200}));
-        lineChart.start();
-
-        // ➤ Payment Method Pie Chart
-        Map<String, Double> payments = new LinkedHashMap<>();
-        payments.put("Cash", 50.0);
-        payments.put("Card", 30.0);
-        payments.put("Online", 20.0);
-        pieChartPanel.setData(payments);
-
-        // Set Header Style
+    
         JTableHeader header = jTable1.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        header.setBackground(new Color(0, 204, 102)); // light green
-        header.setForeground(Color.WHITE);
-        header.setPreferredSize(new Dimension(header.getWidth(), 35));
+        header.setOpaque(true);
+        header.setBackground(new Color(242, 242, 242));
+        header.setForeground(new Color(51, 51, 51));
+        header.setPreferredSize(new Dimension(header.getWidth(), 38));
 
-// Set Row Height and Grid
-        jTable1.setRowHeight(32);
+
+        jTable1.setRowHeight(34);
         jTable1.setShowGrid(false);
         jTable1.setIntercellSpacing(new Dimension(0, 0));
-
-// Remove borders
-        jTable1.setBorder(null);
-        ((JScrollPane) jTable1.getParent().getParent()).setBorder(null);
-
-// Font for cells
         jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        jTable1.setForeground(Color.BLACK);
+        jTable1.setForeground(new Color(51, 51, 51));
+        jTable1.setSelectionBackground(new Color(255, 228, 181));
+        jTable1.setSelectionForeground(Color.BLACK);
 
-// Set cell renderer for alternating row colors
-        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
+
+        jTable1.setBorder(null);
+        JScrollPane scrollPane = (JScrollPane) jTable1.getParent().getParent();
+        scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(Color.WHITE);
+
+        int statusColumnIndex = -1;
+        for (int i = 0; i < jTable1.getColumnCount(); i++) {
+            if (jTable1.getColumnName(i).equalsIgnoreCase("Status")) {
+                statusColumnIndex = i;
+                break;
+            }
+        }
+
+
+        DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
@@ -99,55 +79,480 @@ public class DashboardPanel extends javax.swing.JPanel {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 if (!isSelected) {
-                    if (row % 2 == 0) {
-                        c.setBackground(Color.WHITE);
-                    } else {
-                        c.setBackground(new Color(245, 245, 245)); // light gray
-                    }
-                    c.setForeground(Color.BLACK);
-                } else {
-                    c.setBackground(new Color(0, 120, 215));
-                    c.setForeground(Color.WHITE);
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(250, 250, 250));
+                    c.setForeground(new Color(51, 51, 51));
                 }
-
-                setHorizontalAlignment(CENTER); // Center align all cells
+                setHorizontalAlignment(CENTER);
                 return c;
             }
         };
 
-// Apply to all columns
+        DefaultTableCellRenderer statusRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                String status = value.toString();
+                if (status.equals("Completed")) {
+                    c.setForeground(new Color(0, 153, 0)); 
+                } else if (status.equals("Pending")) {
+                    c.setForeground(new Color(255, 140, 0));
+                } else if (status.equals("Cancelled")) {
+                    c.setForeground(Color.RED); 
+                } else {
+                    c.setForeground(new Color(51, 51, 51));
+                }
+
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(250, 250, 250));
+                }
+
+                setHorizontalAlignment(CENTER);
+                return c;
+            }
+        };
+
         for (int i = 0; i < jTable1.getColumnCount(); i++) {
-            jTable1.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
+            if (i == statusColumnIndex) {
+                jTable1.getColumnModel().getColumn(i).setCellRenderer(statusRenderer);
+            } else {
+                jTable1.getColumnModel().getColumn(i).setCellRenderer(defaultRenderer);
+            }
+        }
+
+        JTableHeader header1 = jTable2.getTableHeader();
+        header1.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header1.setOpaque(true);
+        header1.setBackground(new Color(242, 242, 242)); 
+        header1.setForeground(new Color(51, 51, 51)); 
+        header1.setPreferredSize(new Dimension(header1.getWidth(), 38));
+
+
+        jTable2.setRowHeight(34);
+        jTable2.setShowGrid(false);
+        jTable2.setIntercellSpacing(new Dimension(0, 0));
+        jTable2.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        jTable2.setForeground(new Color(51, 51, 51)); 
+        jTable2.setSelectionBackground(new Color(255, 228, 181)); 
+        jTable2.setSelectionForeground(Color.BLACK);
+
+        jTable2.setBorder(null);
+        JScrollPane scrollPane1 = (JScrollPane) jTable1.getParent().getParent();
+        scrollPane1.setBorder(null);
+        scrollPane1.getViewport().setBackground(Color.WHITE);
+
+        DefaultTableCellRenderer cellRenderer1 = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(250, 250, 250));
+                    c.setForeground(new Color(51, 51, 51));
+                }
+                setHorizontalAlignment(CENTER); 
+                return c;
+            }
+        };
+
+        for (int i = 0; i < jTable2.getColumnCount(); i++) {
+            jTable2.getColumnModel().getColumn(i).setCellRenderer(cellRenderer1);
+        }
+
+    }
+
+    private void loadBestSellingProducts() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+
+            String sql = """
+            SELECT 
+                p.name AS product_name,
+                SUM(s.quantity) AS total_quantity_sold,
+                p.price AS unit_price,
+                SUM(s.total_price) AS total_selling_price
+            FROM sales s
+            JOIN product p ON s.product_id = p.id
+            GROUP BY p.id, p.name, p.price
+            ORDER BY total_quantity_sold DESC
+        """;
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            // Get table model & clear rows
+            DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
+            model.setRowCount(0);
+
+            while (rs.next()) {
+                String productName = rs.getString("product_name");
+                int quantitySold = rs.getInt("total_quantity_sold");
+                double unitPrice = rs.getDouble("unit_price");
+                double totalSellingPrice = rs.getDouble("total_selling_price");
+
+                model.addRow(new Object[]{productName, quantitySold, unitPrice, totalSellingPrice});
+            }
+
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    private void loadDashboardData() {
-        String sqlSales = "SELECT SUM(total_price) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
-        String sqlOrders = "SELECT COUNT(*) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
-        String sqlProfit = "SELECT SUM(profit) FROM sales WHERE YEARWEEK(DATE(sale_date), 1) = YEARWEEK(CURDATE(), 1)";
+    private void loadMonthlyIncome() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
 
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/nexamarket", "root", "1234")) {
+            String sql = """
+            SELECT
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEAR(sale_date) = YEAR(CURDATE()) 
+                   AND MONTH(sale_date) = MONTH(CURDATE())) AS this_month,
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEAR(sale_date) = YEAR(CURDATE() - INTERVAL 1 MONTH) 
+                   AND MONTH(sale_date) = MONTH(CURDATE() - INTERVAL 1 MONTH)) AS last_month
+        """;
 
-            // Sales
-            try (PreparedStatement ps = con.prepareStatement(sqlSales); ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    lblWeeklySales.setText("Rs. " + rs.getDouble(1));
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next()) {
+                double thisMonth = rs.getDouble("this_month");
+                double lastMonth = rs.getDouble("last_month");
+
+                jLabel17.setText(String.format("%.2f", thisMonth));
+
+        
+                double percentage = 0;
+                if (lastMonth > 0) {
+                    percentage = ((thisMonth - lastMonth) / lastMonth) * 100;
+                } else if (thisMonth > 0) {
+                    percentage = 100;
+                }
+
+            
+                String signArrow = percentage >= 0 ? "^ " : "v ";
+                jLabel18.setText(signArrow + String.format("%.0f", Math.abs(percentage)) + "%");
+
+            
+                if (percentage > 0) {
+                    jLabel19.setText("Increase compared to last month");
+                } else if (percentage < 0) {
+                    jLabel19.setText("Decrease compared to last month");
+                } else {
+                    jLabel19.setText("No change compared to last month");
                 }
             }
 
-            // Orders
-            try (PreparedStatement ps = con.prepareStatement(sqlOrders); ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    lblWeeklyOrders.setText(String.valueOf(rs.getInt(1)));
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jLabel17.setText("Error");
+            jLabel18.setText("Error");
+            jLabel19.setText("Error");
+        }
+    }
+
+    private void loadWeeklyStats() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+
+            String sql = """
+            SELECT
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1)) AS this_week,
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1) - 1) AS last_week
+        """;
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next()) {
+                double thisWeek = rs.getDouble("this_week");
+                double lastWeek = rs.getDouble("last_week");
+
+              
+                jLabel6.setText(String.format("%.2f", thisWeek));
+
+                double percentage = 0;
+                if (lastWeek > 0) {
+                    percentage = ((thisWeek - lastWeek) / lastWeek) * 100;
+                } else if (thisWeek > 0) {
+                    percentage = 100;
+                }
+
+             
+                String signArrow = percentage >= 0 ? "^ " : "v ";
+                jLabel7.setText(signArrow + String.format("%.0f", Math.abs(percentage)) + "%");
+
+               
+                if (percentage > 0) {
+                    jLabel8.setText("Increase compared to last week");
+                } else if (percentage < 0) {
+                    jLabel8.setText("Decrease compared to last week");
+                } else {
+                    jLabel8.setText("No change compared to last week");
                 }
             }
 
-            // Profit
-            try (PreparedStatement ps = con.prepareStatement(sqlProfit); ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    lblWeeklyProfit.setText("Rs. " + rs.getDouble(1));
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jLabel6.setText("Error");
+            jLabel7.setText("Error");
+            jLabel8.setText("Error");
+        }
+    }
+
+    private void loadWeeklySalesCount() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+
+            String sql = """
+            SELECT
+                (SELECT COUNT(*) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1)) AS this_week_count,
+                (SELECT COUNT(*) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1) - 1) AS last_week_count
+        """;
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next()) {
+                int thisWeekCount = rs.getInt("this_week_count");
+                int lastWeekCount = rs.getInt("last_week_count");
+
+               
+                jLabel12.setText(String.valueOf(thisWeekCount));
+
+           
+                double percentage = 0;
+                if (lastWeekCount > 0) {
+                    percentage = ((double) (thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
+                } else if (thisWeekCount > 0) {
+                    percentage = 100;
+                }
+
+       
+                String signArrow = percentage >= 0 ? "^ " : "v ";
+                jLabel14.setText(signArrow + String.format("%.0f", Math.abs(percentage)) + "%");
+
+              
+                if (percentage > 0) {
+                    jLabel13.setText("Increase compared to last week");
+                } else if (percentage < 0) {
+                    jLabel13.setText("Decrease compared to last week");
+                } else {
+                    jLabel13.setText("No change compared to last week");
                 }
             }
+
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jLabel12.setText("Error");
+            jLabel14.setText("Error");
+            jLabel13.setText("Error");
+        }
+    }
+
+    private void loadWeeklyPercentageIncrease() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+
+            String sql = """
+            SELECT
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1)) AS this_week,
+                (SELECT IFNULL(SUM(total_price), 0) 
+                 FROM sales 
+                 WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1) - 1) AS last_week
+        """;
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next()) {
+                double thisWeek = rs.getDouble("this_week");
+                double lastWeek = rs.getDouble("last_week");
+
+                double percentage = 0;
+                if (lastWeek > 0) {
+                    percentage = ((thisWeek - lastWeek) / lastWeek) * 100;
+                } else if (thisWeek > 0) {
+                    
+                    percentage = 100;
+                }
+
+              
+                String sign = percentage >= 0 ? "^ " : "v ";
+                jLabel7.setText(sign + String.format("%.0f", Math.abs(percentage)) + "%");
+            }
+
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jLabel7.setText("Error");
+        }
+    }
+
+    private void loadWeeklyEarnings() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket", "root", "1234");
+
+            String sql = """
+            SELECT IFNULL(SUM(total_price), 0) AS weekly_total
+            FROM sales
+            WHERE YEARWEEK(sale_date, 1) = YEARWEEK(CURDATE(), 1)
+        """;
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery(sql);
+
+            if (rs.next()) {
+                double weeklyTotal = rs.getDouble("weekly_total");
+                jLabel6.setText(String.format("%.2f", weeklyTotal)); // 2 decimal format
+            }
+
+            rs.close();
+            statement.close();
+            c.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jLabel6.setText("Error");
+        }
+    }
+
+    private void loadTransactionDetails() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/nexamarket",
+                    "root",
+                    "1234"
+            );
+
+            Statement statement = c.createStatement();
+            ResultSet rs = statement.executeQuery("SELECT * FROM transaction_details");
+
+            DefaultTableModel model = new DefaultTableModel(
+                    new String[]{"#", "Total Amount", "Total Qty", "Date & Time", "Status", "Payment Method"}, 0
+            );
+
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("id"),
+                    rs.getString("Total Amount"),
+                    rs.getString("Total Qty"),
+                    rs.getString("Date&Time"),
+                    rs.getString("Status"),
+                    rs.getString("Payment_Method")
+                });
+            }
+
+            jTable1.setModel(model);
+
+         
+            int statusColumnIndex = -1;
+            for (int i = 0; i < jTable1.getColumnCount(); i++) {
+                if (jTable1.getColumnName(i).equalsIgnoreCase("Status")) {
+                    statusColumnIndex = i;
+                    break;
+                }
+            }
+
+            if (statusColumnIndex != -1) {
+            
+                jTable1.getColumnModel().getColumn(statusColumnIndex).setCellRenderer(new DefaultTableCellRenderer() {
+                    @Override
+                    public Component getTableCellRendererComponent(JTable table, Object value,
+                            boolean isSelected, boolean hasFocus,
+                            int row, int column) {
+                        Component comp = super.getTableCellRendererComponent(table, value,
+                                isSelected, hasFocus, row, column);
+
+                        String status = value.toString();
+
+                      
+                        if (status.equals("Completed")) {
+                            comp.setForeground(new Color(0, 153, 0)); 
+                        } else if (status.equals("Pending")) {
+                            comp.setForeground(new Color(255, 140, 0)); 
+                        } else if (status.equals("Cancelled")) {
+                            comp.setForeground(Color.RED); 
+                        } else {
+                            comp.setForeground(Color.BLACK);
+                        }
+
+                        
+                        setHorizontalAlignment(CENTER);
+
+                       
+                        if (isSelected) {
+                            comp.setBackground(table.getSelectionBackground());
+                        } else {
+                            comp.setBackground(row % 2 == 0 ? Color.WHITE : new Color(250, 250, 250));
+                        }
+
+                        return comp;
+                    }
+                });
+            }
+
+         
+            jTable1.setRowHeight(25);
+            jTable1.setShowGrid(false);
+            jTable1.setIntercellSpacing(new Dimension(0, 0));
+            jTable1.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            jTable1.setForeground(new Color(51, 51, 51));
+            jTable1.setSelectionBackground(new Color(255, 228, 181));
+            jTable1.setSelectionForeground(Color.BLACK);
+            jTable1.setBorder(null);
+
+            rs.close();
+            statement.close();
+            c.close();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,494 +569,302 @@ public class DashboardPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        roundedPanel7 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        gradientCardPanel21 = new dev.ramindu.nexamarket.components.GradientCardPanel2();
-        jLabel4 = new javax.swing.JLabel();
-        lblWeeklySales = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel22 = new javax.swing.JLabel();
-        roundedPanel9 = new dev.ramindu.nexamarket.components.RoundedPanel();
+        jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        roundedPanel10 = new dev.ramindu.nexamarket.components.RoundedPanel();
         jLabel3 = new javax.swing.JLabel();
-        roundedPanel4 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        pieChartPanel = new dev.ramindu.nexamarket.components.PieChartPanel();
-        jLabel16 = new javax.swing.JLabel();
-        roundedPanel8 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        gradientCardPanel11 = new dev.ramindu.nexamarket.components.GradientCardPanel1();
-        jLabel9 = new javax.swing.JLabel();
-        lblWeeklyOrders = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
-        roundedPanel11 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        roundButton1 = new dev.ramindu.nexamarket.components.RoundButton();
-        circularProgressBar = new dev.ramindu.nexamarket.components.CircularProgressBar();
-        roundedPanel13 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        gradientCardPanel1 = new dev.ramindu.nexamarket.components.GradientCardPanel();
         jLabel14 = new javax.swing.JLabel();
-        lblWeeklyProfit = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        roundedPanel18 = new dev.ramindu.nexamarket.components.RoundedPanel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
-        stackedProgressBar1 = new dev.ramindu.nexamarket.components.StackedProgressBar();
-        roundedPanel12 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        lineChart = new dev.ramindu.nexamarket.components.chart.LineChart();
-        roundedPanel15 = new dev.ramindu.nexamarket.components.RoundedPanel();
-        polarAreaChartPanel2 = new dev.ramindu.nexamarket.components.PolarAreaChartPanel();
-        calendar2 = new dev.ramindu.nexamarket.calander.Calendar();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTable2 = new javax.swing.JTable();
+        jPanel6 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jLabel25 = new javax.swing.JLabel();
-        roundedPanel1 = new dev.ramindu.nexamarket.components.RoundedPanel();
+        jLabel9 = new javax.swing.JLabel();
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/home.png"))); // NOI18N
         jLabel1.setText("  Dashboard");
 
-        roundedPanel7.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        gradientCardPanel21.setPreferredSize(new java.awt.Dimension(455, 272));
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
+        jLabel2.setText("Hi  Ramindu Ravihansa,");
 
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("Weekly Sales");
+        jLabel3.setText("here's what's happening with your store today");
 
-        lblWeeklySales.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        lblWeeklySales.setForeground(new java.awt.Color(255, 255, 255));
-        lblWeeklySales.setText("Rs. 150,000");
-
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel6.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel6.setText("Increased By 20%");
-
-        jLabel22.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/chart.png"))); // NOI18N
-
-        javax.swing.GroupLayout gradientCardPanel21Layout = new javax.swing.GroupLayout(gradientCardPanel21);
-        gradientCardPanel21.setLayout(gradientCardPanel21Layout);
-        gradientCardPanel21Layout.setHorizontalGroup(
-            gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel21Layout.createSequentialGroup()
-                .addGap(60, 60, 60)
-                .addGroup(gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(gradientCardPanel21Layout.createSequentialGroup()
-                        .addGroup(gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(lblWeeklySales))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(gradientCardPanel21Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel22)
-                        .addGap(44, 44, 44))))
-        );
-        gradientCardPanel21Layout.setVerticalGroup(
-            gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel21Layout.createSequentialGroup()
-                .addGap(55, 55, 55)
-                .addGroup(gradientCardPanel21Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel22))
-                .addGap(44, 44, 44)
-                .addComponent(lblWeeklySales)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addComponent(jLabel6)
-                .addGap(53, 53, 53))
-        );
-
-        javax.swing.GroupLayout roundedPanel7Layout = new javax.swing.GroupLayout(roundedPanel7);
-        roundedPanel7.setLayout(roundedPanel7Layout);
-        roundedPanel7Layout.setHorizontalGroup(
-            roundedPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gradientCardPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
-        );
-        roundedPanel7Layout.setVerticalGroup(
-            roundedPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gradientCardPanel21, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-        );
-
-        roundedPanel9.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/online.png"))); // NOI18N
-        jLabel2.setText("  Present 2 Cashiers");
-
-        javax.swing.GroupLayout roundedPanel9Layout = new javax.swing.GroupLayout(roundedPanel9);
-        roundedPanel9.setLayout(roundedPanel9Layout);
-        roundedPanel9Layout.setHorizontalGroup(
-            roundedPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel9Layout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        roundedPanel9Layout.setVerticalGroup(
-            roundedPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel9Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        roundedPanel10.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/offline.png"))); // NOI18N
-        jLabel3.setText("  Absent 2 Cashiers");
-
-        javax.swing.GroupLayout roundedPanel10Layout = new javax.swing.GroupLayout(roundedPanel10);
-        roundedPanel10.setLayout(roundedPanel10Layout);
-        roundedPanel10Layout.setHorizontalGroup(
-            roundedPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel10Layout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        roundedPanel10Layout.setVerticalGroup(
-            roundedPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel10Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-
-        roundedPanel4.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout pieChartPanelLayout = new javax.swing.GroupLayout(pieChartPanel);
-        pieChartPanel.setLayout(pieChartPanelLayout);
-        pieChartPanelLayout.setHorizontalGroup(
-            pieChartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 362, Short.MAX_VALUE)
-        );
-        pieChartPanelLayout.setVerticalGroup(
-            pieChartPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 244, Short.MAX_VALUE)
-        );
-
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel16.setText("Payment Methods");
-
-        javax.swing.GroupLayout roundedPanel4Layout = new javax.swing.GroupLayout(roundedPanel4);
-        roundedPanel4.setLayout(roundedPanel4Layout);
-        roundedPanel4Layout.setHorizontalGroup(
-            roundedPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(roundedPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel4Layout.createSequentialGroup()
-                        .addComponent(pieChartPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(37, 37, 37))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel16)
-                        .addGap(126, 126, 126))))
-        );
-        roundedPanel4Layout.setVerticalGroup(
-            roundedPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel4Layout.createSequentialGroup()
-                .addContainerGap(26, Short.MAX_VALUE)
-                .addComponent(jLabel16)
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pieChartPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        roundedPanel8.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel9.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel9.setText("Weekly Orders");
-
-        lblWeeklyOrders.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        lblWeeklyOrders.setForeground(new java.awt.Color(255, 255, 255));
-        lblWeeklyOrders.setText("Rs. 250,000");
-
-        jLabel13.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel13.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel13.setText("Increased By 60%");
-
-        jLabel23.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/bookmark.png"))); // NOI18N
-
-        javax.swing.GroupLayout gradientCardPanel11Layout = new javax.swing.GroupLayout(gradientCardPanel11);
-        gradientCardPanel11.setLayout(gradientCardPanel11Layout);
-        gradientCardPanel11Layout.setHorizontalGroup(
-            gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel11Layout.createSequentialGroup()
-                .addGap(70, 70, 70)
-                .addGroup(gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(gradientCardPanel11Layout.createSequentialGroup()
-                        .addGroup(gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel13)
-                            .addComponent(lblWeeklyOrders))
-                        .addContainerGap(202, Short.MAX_VALUE))
-                    .addGroup(gradientCardPanel11Layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel23)
-                        .addGap(34, 34, 34))))
-        );
-        gradientCardPanel11Layout.setVerticalGroup(
-            gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel11Layout.createSequentialGroup()
-                .addGap(53, 53, 53)
-                .addGroup(gradientCardPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel23))
-                .addGap(40, 40, 40)
-                .addComponent(lblWeeklyOrders)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel13)
-                .addContainerGap(45, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout roundedPanel8Layout = new javax.swing.GroupLayout(roundedPanel8);
-        roundedPanel8.setLayout(roundedPanel8Layout);
-        roundedPanel8Layout.setHorizontalGroup(
-            roundedPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gradientCardPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        roundedPanel8Layout.setVerticalGroup(
-            roundedPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel8Layout.createSequentialGroup()
-                .addComponent(gradientCardPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        roundedPanel11.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel10.setText("Your Attendace");
-
-        jLabel11.setText("View Your Monthly Attendace Percentage Very Easily");
-
-        roundButton1.setText("Mark Attendance");
-        roundButton1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        javax.swing.GroupLayout circularProgressBarLayout = new javax.swing.GroupLayout(circularProgressBar);
-        circularProgressBar.setLayout(circularProgressBarLayout);
-        circularProgressBarLayout.setHorizontalGroup(
-            circularProgressBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        circularProgressBarLayout.setVerticalGroup(
-            circularProgressBarLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 229, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout roundedPanel11Layout = new javax.swing.GroupLayout(roundedPanel11);
-        roundedPanel11.setLayout(roundedPanel11Layout);
-        roundedPanel11Layout.setHorizontalGroup(
-            roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, roundedPanel11Layout.createSequentialGroup()
-                .addGroup(roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addGap(44, 44, 44)
-                        .addComponent(circularProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE))
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addContainerGap(53, Short.MAX_VALUE)
-                        .addComponent(roundButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 231, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(49, 49, 49))
-            .addGroup(roundedPanel11Layout.createSequentialGroup()
-                .addGroup(roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addGap(79, 79, 79)
-                        .addComponent(jLabel10))
-                    .addGroup(roundedPanel11Layout.createSequentialGroup()
-                        .addGap(27, 27, 27)
-                        .addComponent(jLabel11)))
+                .addComponent(jLabel3)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        roundedPanel11Layout.setVerticalGroup(
-            roundedPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel11Layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addComponent(jLabel10)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
-                .addComponent(circularProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(13, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3))
+                .addGap(13, 13, 13))
+        );
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/analytics (1).png"))); // NOI18N
+
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel4.setText("Weekly Earning");
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        jLabel6.setText("$95000.45");
+
+        jLabel7.setText("^ 49% ");
+
+        jLabel8.setText("Increase Compare To Last Week");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel6)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel8)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 245, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addGap(27, 27, 27))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel5))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(jLabel4)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel6)
+                        .addGap(28, 28, 28)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(jLabel8))))
+                .addContainerGap(20, Short.MAX_VALUE))
+        );
+
+        jPanel3.setBackground(new java.awt.Color(244, 145, 64));
+
+        jLabel13.setText("Increase Compare To Last Week");
+
+        jLabel14.setText("^ 49% ");
+
+        jLabel12.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        jLabel12.setText("1500");
+
+        jLabel11.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel11.setText("Weekly Sales Count");
+
+        jLabel15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/analytics2.png"))); // NOI18N
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addComponent(roundButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(24, 24, 24))
-        );
-
-        roundedPanel13.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel14.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
-        jLabel14.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel14.setText("Updated Profit");
-
-        lblWeeklyProfit.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        lblWeeklyProfit.setForeground(new java.awt.Color(255, 255, 255));
-        lblWeeklyProfit.setText("Rs. 45,000");
-
-        jLabel21.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel21.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel21.setText("Increased By 40%");
-
-        jLabel24.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/profit.png"))); // NOI18N
-        jLabel24.setToolTipText("");
-
-        javax.swing.GroupLayout gradientCardPanel1Layout = new javax.swing.GroupLayout(gradientCardPanel1);
-        gradientCardPanel1.setLayout(gradientCardPanel1Layout);
-        gradientCardPanel1Layout.setHorizontalGroup(
-            gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel1Layout.createSequentialGroup()
-                .addGap(68, 68, 68)
-                .addGroup(gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(gradientCardPanel1Layout.createSequentialGroup()
-                        .addGroup(gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel21)
-                            .addComponent(lblWeeklyProfit))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(gradientCardPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel12)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jLabel14)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel24)
-                        .addGap(33, 33, 33))))
-        );
-        gradientCardPanel1Layout.setVerticalGroup(
-            gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gradientCardPanel1Layout.createSequentialGroup()
-                .addGroup(gradientCardPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(gradientCardPanel1Layout.createSequentialGroup()
-                        .addGap(74, 74, 74)
-                        .addComponent(jLabel14))
-                    .addGroup(gradientCardPanel1Layout.createSequentialGroup()
-                        .addGap(65, 65, 65)
-                        .addComponent(jLabel24)))
-                .addGap(53, 53, 53)
-                .addComponent(lblWeeklyProfit)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel13)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel21)
-                .addContainerGap(29, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout roundedPanel13Layout = new javax.swing.GroupLayout(roundedPanel13);
-        roundedPanel13.setLayout(roundedPanel13Layout);
-        roundedPanel13Layout.setHorizontalGroup(
-            roundedPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gradientCardPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        roundedPanel13Layout.setVerticalGroup(
-            roundedPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gradientCardPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
-        roundedPanel18.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel15.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel15.setText("Upcoming Stock");
-
-        javax.swing.GroupLayout stackedProgressBar1Layout = new javax.swing.GroupLayout(stackedProgressBar1);
-        stackedProgressBar1.setLayout(stackedProgressBar1Layout);
-        stackedProgressBar1Layout.setHorizontalGroup(
-            stackedProgressBar1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        stackedProgressBar1Layout.setVerticalGroup(
-            stackedProgressBar1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 66, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout roundedPanel18Layout = new javax.swing.GroupLayout(roundedPanel18);
-        roundedPanel18.setLayout(roundedPanel18Layout);
-        roundedPanel18Layout.setHorizontalGroup(
-            roundedPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel18Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(stackedProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                .addContainerGap())
-            .addGroup(roundedPanel18Layout.createSequentialGroup()
-                .addGap(27, 27, 27)
                 .addComponent(jLabel15)
-                .addContainerGap(322, Short.MAX_VALUE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
-        roundedPanel18Layout.setVerticalGroup(
-            roundedPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel18Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(jLabel15)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stackedProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
-        );
-
-        roundedPanel12.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout roundedPanel12Layout = new javax.swing.GroupLayout(roundedPanel12);
-        roundedPanel12.setLayout(roundedPanel12Layout);
-        roundedPanel12Layout.setHorizontalGroup(
-            roundedPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel12Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lineChart, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        roundedPanel12Layout.setVerticalGroup(
-            roundedPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel12Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lineChart, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addComponent(jLabel11)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel12)
+                        .addGap(28, 28, 28)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel14)
+                            .addComponent(jLabel13)))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(19, 19, 19)
+                        .addComponent(jLabel15)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        roundedPanel15.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel4.setBackground(new java.awt.Color(36, 63, 81));
 
-        polarAreaChartPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel16.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel16.setText("Monthly Income");
 
-        javax.swing.GroupLayout polarAreaChartPanel2Layout = new javax.swing.GroupLayout(polarAreaChartPanel2);
-        polarAreaChartPanel2.setLayout(polarAreaChartPanel2Layout);
-        polarAreaChartPanel2Layout.setHorizontalGroup(
-            polarAreaChartPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        jLabel19.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel19.setText("Increase Compare To Last Week");
+
+        jLabel17.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
+        jLabel17.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel17.setText("1500");
+
+        jLabel18.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel18.setText("^ 49% ");
+
+        jLabel20.setIcon(new javax.swing.ImageIcon(getClass().getResource("/dev/ramindu/nexamarket/img/analytics3.png"))); // NOI18N
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel16)
+                    .addComponent(jLabel17)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel19)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
+                .addComponent(jLabel20)
+                .addGap(14, 14, 14))
         );
-        polarAreaChartPanel2Layout.setVerticalGroup(
-            polarAreaChartPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jLabel16)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel17)
+                        .addGap(28, 28, 28)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel18)
+                            .addComponent(jLabel19)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(jLabel20)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout roundedPanel15Layout = new javax.swing.GroupLayout(roundedPanel15);
-        roundedPanel15.setLayout(roundedPanel15Layout);
-        roundedPanel15Layout.setHorizontalGroup(
-            roundedPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel15Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(polarAreaChartPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        roundedPanel15Layout.setVerticalGroup(
-            roundedPanel15Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(roundedPanel15Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(polarAreaChartPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+        jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel10.setText("Best Selling Products");
+
+        jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
                 {null, null, null, null}
             },
             new String [] {
-                "Cashier Name", "Cashier Email", "Payment Date", "Paid Amount"
+                "Product Name", "Orders", "Price", "Total Price"
+            }
+        ));
+        jScrollPane2.setViewportView(jTable2);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addComponent(jLabel10)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2)
+                .addContainerGap())
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addComponent(jLabel10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2)
+                .addContainerGap())
+        );
+
+        jPanel6.setBackground(new java.awt.Color(255, 255, 255));
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "#", "Total Amount", "Total Qty", "Date & Time", "Status", "Payment Method"
             }
         ));
         jScrollPane1.setViewportView(jTable1);
 
-        jLabel25.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jLabel25.setText("Monthly Cashier Payment");
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel9.setText("Recent Transactions");
 
-        roundedPanel1.setBackground(new java.awt.Color(255, 255, 255));
-
-        javax.swing.GroupLayout roundedPanel1Layout = new javax.swing.GroupLayout(roundedPanel1);
-        roundedPanel1.setLayout(roundedPanel1Layout);
-        roundedPanel1Layout.setHorizontalGroup(
-            roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addGap(0, 863, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-        roundedPanel1Layout.setVerticalGroup(
-            roundedPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(jLabel9)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -661,134 +874,72 @@ public class DashboardPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGap(17, 17, 17)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addContainerGap())
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(roundedPanel7, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(roundedPanel13, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(roundedPanel18, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(roundedPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(roundedPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(roundedPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(35, 35, 35))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(roundedPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(roundedPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jLabel25)
-                                        .addGap(322, 322, 322))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(18, 18, 18)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 821, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addContainerGap(35, Short.MAX_VALUE))
-                                            .addGroup(layout.createSequentialGroup()
-                                                .addComponent(calendar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addGap(18, 18, 18)
-                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                    .addGroup(layout.createSequentialGroup()
-                                                        .addComponent(roundedPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                        .addComponent(roundedPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                    .addComponent(roundedPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                                .addGap(35, 35, 35))))))))))
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addComponent(jLabel1)
-                .addGap(29, 29, 29)
+                .addGap(18, 18, 18)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(roundedPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(roundedPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(roundedPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(calendar2, javax.swing.GroupLayout.PREFERRED_SIZE, 361, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addComponent(jLabel25)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(roundedPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(roundedPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGap(21, 21, 21)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(roundedPanel15, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(roundedPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(roundedPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(roundedPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(roundedPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(roundedPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(209, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private dev.ramindu.nexamarket.calander.Calendar calendar2;
-    private dev.ramindu.nexamarket.components.CircularProgressBar circularProgressBar;
-    private dev.ramindu.nexamarket.components.GradientCardPanel gradientCardPanel1;
-    private dev.ramindu.nexamarket.components.GradientCardPanel1 gradientCardPanel11;
-    private dev.ramindu.nexamarket.components.GradientCardPanel2 gradientCardPanel21;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JLabel lblWeeklyOrders;
-    private javax.swing.JLabel lblWeeklyProfit;
-    private javax.swing.JLabel lblWeeklySales;
-    private dev.ramindu.nexamarket.components.chart.LineChart lineChart;
-    private dev.ramindu.nexamarket.components.PieChartPanel pieChartPanel;
-    private dev.ramindu.nexamarket.components.PolarAreaChartPanel polarAreaChartPanel2;
-    private dev.ramindu.nexamarket.components.RoundButton roundButton1;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel1;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel10;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel11;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel12;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel13;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel15;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel18;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel4;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel7;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel8;
-    private dev.ramindu.nexamarket.components.RoundedPanel roundedPanel9;
-    private dev.ramindu.nexamarket.components.StackedProgressBar stackedProgressBar1;
+    private javax.swing.JTable jTable2;
     // End of variables declaration//GEN-END:variables
 }
